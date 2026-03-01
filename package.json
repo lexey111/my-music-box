@@ -1,0 +1,30 @@
+{
+  "name": "my-music-box",
+  "version": "0.1.0",
+  "description": "Local music player and collection manager",
+  "main": "out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "package": "electron-vite build && electron-builder",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.6.2"
+  },
+  "devDependencies": {
+    "@electron-toolkit/preload": "^3.0.0",
+    "@electron-toolkit/tsconfig": "^1.0.1",
+    "@electron-toolkit/utils": "^3.0.0",
+    "@sveltejs/vite-plugin-svelte": "^4.0.0",
+    "@tanstack/svelte-virtual": "^3.8.0",
+    "@types/better-sqlite3": "^7.6.11",
+    "electron": "^33.4.11",
+    "electron-builder": "^25.0.0",
+    "electron-vite": "^2.3.0",
+    "svelte": "^5.0.0",
+    "typescript": "^5.5.3",
+    "vite": "^5.4.0"
+  },
+  "private": true
+}

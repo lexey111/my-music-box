@@ -1,0 +1,23 @@
+appId: com.musicbox.app
+productName: My Music Box
+directories:
+  buildResources: build
+  output: dist
+files:
+  - out/**/*
+  - '!src/**'
+  - '!electron.vite.config.*'
+  - '!svelte.config.*'
+  - '!tsconfig*'
+asarUnpack:
+  # Native modules must not be asar-packed
+  - node_modules/better-sqlite3/**
+  # Future: bundled binaries
+  # - resources/bin/**
+mac:
+  category: public.app-category.music
+  target:
+    - dmg
+    - zip
+  notarize: false
+npmRebuild: true
