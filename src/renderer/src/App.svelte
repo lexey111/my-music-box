@@ -124,17 +124,22 @@
       </button>
     </div>
 
-    <!-- ── View ──────────────────────────────────────────────────────────── -->
-    {#if $activeTab === 'library'}
-      <LibraryView />
-    {:else if $activeTab === 'addMusic'}
-      <AddMusicView />
-    {:else}
-      <SettingsView />
-    {/if}
+    <!-- ── Content area ─────────────────────────────────────────────────── -->
+    <div class="content-area">
+      {#if $activeTab === 'addMusic'}
+        <AddMusicView />
+      {:else}
+        <div class="content-island">
+          {#if $activeTab === 'library'}
+            <LibraryView />
+          {:else}
+            <SettingsView />
+          {/if}
+        </div>
+      {/if}
 
-    <!-- ── Status bar ────────────────────────────────────────────────────── -->
-    <div class="statusbar">
+      <!-- ── Status bar ──────────────────────────────────────────────────── -->
+      <div class="statusbar">
       <span class="statusbar-path">{$libraryPath ?? ''}</span>
       <span class="statusbar-sep"></span>
       <!-- svelte-ignore a11y-invalid-attribute -->
@@ -155,6 +160,7 @@
         {/if}
       </span>
     </div>
+    </div><!-- end content-area -->
   </div>
 {/if}
 
@@ -212,6 +218,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    background: var(--bg-app);
   }
 
   /* ── Tab bar ────────────────────────────────────────────────────────── */
@@ -222,11 +229,31 @@
     align-items: stretch;
     justify-content: center;
     height: var(--toolbar-height);
-    padding: 0 80px; /* clear macOS traffic lights symmetrically */
-    border-bottom: 1px solid var(--border);
-    background: var(--bg-secondary);
+    padding: 0 80px;
+    background: var(--bg-app);
     -webkit-app-region: drag;
     flex-shrink: 0;
+  }
+
+  /* ── Content area (padded canvas below tab bar) ──────────────────────── */
+
+  .content-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 0 8px 8px;
+    overflow: hidden;
+  }
+
+  /* ── Content island ──────────────────────────────────────────────────── */
+
+  .content-island {
+    flex: 1;
+    overflow: hidden;
+    border-radius: 10px;
+    background: var(--bg);
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
   }
 
   .tab {
@@ -242,7 +269,6 @@
     background: none;
     border: none;
     border-bottom: 2px solid transparent;
-    margin-bottom: -1px; /* overlap the tab-bar bottom border */
     transition: color 0.1s;
   }
 
@@ -290,12 +316,12 @@
   /* ── Status bar ─────────────────────────────────────────────────────── */
 
   .statusbar {
-    height: 22px;
+    height: 34px;
     padding: 0 12px;
     display: flex;
     align-items: stretch;
-    border-top: 1px solid var(--border);
-    background: var(--bg-secondary);
+    background: var(--bg);
+    border-radius: 8px;
     flex-shrink: 0;
     font-size: 11px;
     color: var(--fg-muted);

@@ -4,11 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="baa64891-4534-4ae1-9d4e-4c8e9230231c" name="Changes" comment="Settings">
+    <list default="true" id="baa64891-4534-4ae1-9d4e-4c8e9230231c" name="Changes" comment="Fix various errors">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/services/LibraryService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/services/LibraryService.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/src/App.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/src/App.svelte" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/src/lib/stores/app.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/src/lib/stores/app.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/src/app.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/src/app.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/src/lib/stores/downloads.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/src/lib/stores/downloads.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/src/lib/views/AddMusicView.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/src/lib/views/AddMusicView.svelte" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/src/lib/views/LibraryView.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/src/lib/views/LibraryView.svelte" afterDir="false" />
@@ -74,7 +73,7 @@
       <workItem from="1772374642024" duration="927000" />
       <workItem from="1772375579255" duration="1785000" />
       <workItem from="1772377631245" duration="5596000" />
-      <workItem from="1772383484542" duration="7618000" />
+      <workItem from="1772383484542" duration="10735000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <option name="closed" value="true" />
@@ -100,7 +99,15 @@
       <option name="project" value="LOCAL" />
       <updated>1772387302031</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Fix various errors">
+      <option name="closed" value="true" />
+      <created>1772391979070</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1772391979070</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -112,6 +119,7 @@
     <MESSAGE value="Initial commit" />
     <MESSAGE value="Working download" />
     <MESSAGE value="Settings" />
-    <option name="LAST_COMMIT_MESSAGE" value="Settings" />
+    <MESSAGE value="Fix various errors" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix various errors" />
   </component>
 </project>

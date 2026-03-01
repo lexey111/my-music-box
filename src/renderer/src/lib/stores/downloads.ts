@@ -16,6 +16,8 @@ export const searching = writable(false)
 export const searchError = writable<string | null>(null)
 export const activeJobs = writable<Map<string, ClientJob>>(new Map())
 export const pendingQuery = writable<string>('')
+export const searchInput = writable<string>('')
+export const searchLastQuery = writable<string>('')
 
 export function redownloadTrack(track: Track): void {
   searchError.set(null)

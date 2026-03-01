@@ -290,7 +290,7 @@
   .col-status { width: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
   .col-title  { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 12px; }
   .col-artist { width: 180px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg-muted); padding-right: 12px; }
-  .col-duration { width: 64px; flex-shrink: 0; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+  .col-duration { width: 64px; flex-shrink: 0; color: var(--fg-muted); font-variant-numeric: tabular-nums; display: flex; align-items: center; justify-content: flex-end; }
   .col-size   { width: 72px; flex-shrink: 0; color: var(--fg-muted); text-align: right; font-variant-numeric: tabular-nums; }
   .col-action { width: 120px; flex-shrink: 0; display: flex; align-items: center; justify-content: flex-end; padding-right: 4px; }
 
