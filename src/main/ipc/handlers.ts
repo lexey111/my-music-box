@@ -1,4 +1,4 @@
-import { ipcMain, dialog, app } from 'electron'
+import { ipcMain, dialog, app, nativeTheme } from 'electron'
 import { randomUUID } from 'crypto'
 import { LibraryService } from '../services/LibraryService'
 import { SettingsService } from '../services/SettingsService'
@@ -18,6 +18,9 @@ export function registerIpcHandlers({ settings, getLibrary, setLibrary, download
 
   ipcMain.handle('settings:set', (_, key: string, value: unknown) => {
     settings.set(key as never, value as never)
+    if (key === 'theme') {
+      nativeTheme.themeSource = value as 'system' | 'light' | 'dark'
+    }
     return settings.getAll()
   })
 

@@ -1,5 +1,21 @@
 <script lang="ts">
+  import { onMount, onDestroy } from 'svelte'
   import { settings, setSetting, selectLibraryPath } from '../stores/app'
+
+  let memMB = ''
+  let memTimer: ReturnType<typeof setInterval>
+
+  onMount(() => {
+    updateMem()
+    memTimer = setInterval(updateMem, 3000)
+  })
+
+  onDestroy(() => clearInterval(memTimer))
+
+  async function updateMem(): Promise<void> {
+    const mb = await window.api.app.getMemoryMB()
+    memMB = `${mb} MB`
+  }
 </script>
 
 <div class="settings">
@@ -51,7 +67,7 @@
           <input
             type="range"
             min="1"
-            max="12"
+            max="5"
             step="1"
             value={$settings.crossfadeDuration ?? 3}
             on:input={(e) => setSetting('crossfadeDuration', Number((e.target as HTMLInputElement).value))}
@@ -59,6 +75,15 @@
           <span class="range-value">{$settings.crossfadeDuration ?? 3}s</span>
         </div>
       {/if}
+    </section>
+
+    <!-- ── System ─────────────────────────────────────────────────────── -->
+    <section>
+      <h2>System</h2>
+      <div class="row">
+        <span class="label">Memory</span>
+        <span class="muted">{memMB || '…'}</span>
+      </div>
     </section>
 
   </div>
@@ -99,11 +124,6 @@
     align-items: center;
     gap: 12px;
     padding: 8px 0;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .row:last-child {
-    border-bottom: none;
   }
 
   .label {
@@ -157,6 +177,15 @@
     color: var(--fg);
   }
 
+  .segment button:focus-visible {
+    outline: none;
+    box-shadow: none;
+  }
+
+  .segment button:not(.active):focus-visible {
+    color: var(--fg);
+  }
+
   /* ── Toggle switch ───────────────────────────────────────────────────── */
 
   .toggle {
@@ -205,8 +234,8 @@
 
   input[type='range'] {
     flex: 1;
-    accent-color: var(--accent);
   }
+
 
   .range-value {
     font-size: 12px;

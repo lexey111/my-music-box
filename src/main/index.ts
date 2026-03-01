@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell } from 'electron'
+import { app, BrowserWindow, shell, nativeTheme } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { LibraryService } from './services/LibraryService'
@@ -9,7 +9,7 @@ import { registerIpcHandlers } from './ipc/handlers'
 let mainWindow: BrowserWindow | null = null
 let library: LibraryService | null = null
 
-function createWindow(): void {
+function createWindow(backgroundColor = '#e8e8e8'): void {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 780,
@@ -17,6 +17,7 @@ function createWindow(): void {
     minHeight: 560,
     show: false,
     autoHideMenuBar: true,
+    backgroundColor,
     titleBarStyle: 'hiddenInset', // native macOS traffic lights
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -66,7 +67,11 @@ app.whenReady().then(() => {
     downloadService
   })
 
-  createWindow()
+  const savedTheme = settings.get('theme') ?? 'system'
+  nativeTheme.themeSource = savedTheme as 'system' | 'light' | 'dark'
+  const isDark =
+    savedTheme === 'dark' || (savedTheme === 'system' && nativeTheme.shouldUseDarkColors)
+  createWindow(isDark ? '#111111' : '#e8e8e8')
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()

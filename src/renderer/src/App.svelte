@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte'
+  import { onMount } from 'svelte'
   import LibraryView from './lib/views/LibraryView.svelte'
   import AddMusicView from './lib/views/AddMusicView.svelte'
   import SettingsView from './lib/views/SettingsView.svelte'
@@ -7,8 +7,6 @@
   import { handleProgress, handleComplete, handleError } from './lib/stores/downloads'
 
   let ready = false
-  let memMB = ''
-  let memTimer: ReturnType<typeof setInterval>
 
   onMount(async () => {
     await init()
@@ -21,21 +19,18 @@
       loadTracks()
     })
     window.api.download.onError(handleError)
-
-    updateMem()
-    memTimer = setInterval(updateMem, 3000)
   })
-
-  onDestroy(() => clearInterval(memTimer))
-
-  async function updateMem(): Promise<void> {
-    const mb = await window.api.app.getMemoryMB()
-    memMB = `${mb} MB`
-  }
 
   $: applyTheme($settings.theme)
 
   $: totalDuration = $tracks.reduce((sum, t) => sum + (t.duration ?? 0), 0)
+  $: totalSize = $tracks.reduce((sum, t) => sum + (t.file_size ?? 0), 0)
+
+  function formatSize(bytes: number): string {
+    if (bytes === 0) return ''
+    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+    return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
+  }
 
   function formatTotalDuration(s: number): string {
     if (s === 0) return ''
@@ -151,12 +146,10 @@
             <span class="statusbar-sep"></span>
             <span class="statusbar-stat">{formatTotalDuration(totalDuration)}</span>
           {/if}
-          {#if memMB}
+          {#if totalSize > 0}
             <span class="statusbar-sep"></span>
+            <span class="statusbar-stat">{formatSize(totalSize)}</span>
           {/if}
-        {/if}
-        {#if memMB}
-          <span class="statusbar-stat">{memMB}</span>
         {/if}
       </span>
     </div>
@@ -253,7 +246,6 @@
     overflow: hidden;
     border-radius: 10px;
     background: var(--bg);
-    box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
   }
 
   .tab {
@@ -261,6 +253,8 @@
     -webkit-appearance: none;
     appearance: none;
     border-radius: 0;
+    height: auto;
+    align-self: stretch;
     padding: 0 18px;
     font-size: 13px;
     font-weight: 500;
@@ -269,10 +263,13 @@
     background: none;
     border: none;
     border-bottom: 2px solid transparent;
+    box-shadow: none;
     transition: color 0.1s;
   }
 
-  .tab:hover {
+  .tab:hover,
+  .tab:focus-visible {
+    outline: none;
     color: var(--fg);
   }
 
@@ -300,10 +297,13 @@
     background: none;
     color: var(--fg-muted);
     cursor: pointer;
+    box-shadow: none;
     transition: color 0.1s, background 0.1s;
   }
 
-  .gear:hover {
+  .gear:hover,
+  .gear:focus-visible {
+    outline: none;
     color: var(--fg);
     background: var(--bg-hover);
   }

@@ -110,18 +110,17 @@
       {/if}
     </span>
 
-    {#if syncResult}
-      <span class="sync-result">
-        Sync: {syncResult.markedMissing} missing, {syncResult.restored} restored
-      </span>
-    {/if}
-
     <div class="actions">
       {#if $selectedIds.size > 0}
         <button on:click={clearSelection}>Deselect all</button>
         <button class="danger" on:click={handleDelete}>
           Delete ({$selectedIds.size})
         </button>
+      {/if}
+      {#if syncResult}
+        <span class="sync-result">
+          {syncResult.markedMissing} missing, {syncResult.restored} restored
+        </span>
       {/if}
       <button on:click={handleSync} disabled={syncing}>
         {syncing ? 'Syncing…' : 'Sync'}
@@ -206,8 +205,7 @@
     gap: 8px;
     padding: 6px 12px;
     height: var(--toolbar-height);
-    border-bottom: 1px solid var(--border);
-    background: var(--bg-secondary);
+    background: var(--bg-toolbar);
   }
 
   .toolbar input[type='search'] {
@@ -228,6 +226,7 @@
   .actions {
     margin-left: auto;
     display: flex;
+    align-items: center;
     gap: 6px;
   }
 
@@ -239,7 +238,7 @@
     height: var(--header-height);
     padding: 0 12px;
     border-bottom: 1px solid var(--border);
-    background: var(--bg-secondary);
+    background: var(--bg-toolbar);
     font-size: 11px;
     font-weight: 600;
     color: var(--fg-muted);
@@ -292,12 +291,8 @@
   .col-artist { width: 180px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg-muted); padding-right: 12px; }
   .col-duration { width: 64px; flex-shrink: 0; color: var(--fg-muted); font-variant-numeric: tabular-nums; display: flex; align-items: center; justify-content: flex-end; }
   .col-size   { width: 72px; flex-shrink: 0; color: var(--fg-muted); text-align: right; font-variant-numeric: tabular-nums; }
-  .col-action { width: 120px; flex-shrink: 0; display: flex; align-items: center; justify-content: flex-end; padding-right: 4px; }
+  .col-action { width: 148px; flex-shrink: 0; display: flex; align-items: center; justify-content: flex-end; padding-right: 4px; }
 
-  .btn-redownload {
-    font-size: 11px;
-    padding: 2px 8px;
-  }
 
   /* ── Status dot ─────────────────────────────────────────────────────────── */
 

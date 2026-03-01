@@ -47,6 +47,7 @@
     if (pq) {
       query = pq
       lastQuery = pq
+      searchLastQuery.set(pq)
       pendingQuery.set('')
       if (get(searchResults).length === 0) doSearch(pq)
     }
@@ -183,7 +184,7 @@
                         <path d="M12 1L6.5 6.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
                       </svg>
                     </a>
-                    <button on:click={() => startDownload(result)} disabled={status !== 'available'}>
+                    <button class:primary={status === 'available'} on:click={() => startDownload(result)} disabled={status !== 'available'}>
                       {#if status === 'downloading'}<Spinner />{/if}
                       {status === 'library' ? 'In Library' : status === 'downloading' ? 'Downloading…' : 'Download'}
                     </button>
@@ -283,7 +284,6 @@
   .island {
     border-radius: 10px;
     background: var(--bg);
-    box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
     overflow: hidden;
   }
 
@@ -309,8 +309,7 @@
     gap: 8px;
     padding: 6px 12px;
     height: var(--toolbar-height);
-    border-bottom: 1px solid var(--border);
-    background: var(--bg-secondary);
+    background: var(--bg-toolbar);
     flex-shrink: 0;
   }
 
@@ -388,7 +387,7 @@
   }
 
   .results-section h2 {
-    padding: 12px 16px 8px;
+    padding: 22px 16px 22px;
   }
 
   /* ── Queue header ────────────────────────────────────────────────────── */
@@ -510,9 +509,11 @@
     transition: opacity 0.1s, color 0.1s;
   }
 
-  .preview-link:hover {
+  .preview-link:hover,
+  .preview-link:focus-visible {
     color: var(--accent);
     opacity: 1;
+    outline: none;
   }
 
   /* ── Progress bar ────────────────────────────────────────────────────── */
@@ -537,12 +538,6 @@
   .row-done .progress-fill { background: #22c55e; }
   .row-error .col-error     { padding-left: 8px; }
 
-  /* ── Dismiss button ──────────────────────────────────────────────────── */
-
-  .btn-dismiss {
-    font-size: 11px;
-    padding: 2px 8px;
-  }
 
   /* ── Empty state ─────────────────────────────────────────────────────── */
 
