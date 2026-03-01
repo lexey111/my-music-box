@@ -73,10 +73,19 @@ button {
   background: var(--bg-secondary);
   color: var(--fg);
   transition: background 0.1s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
 button:hover {
   background: var(--bg-hover);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+  pointer-events: none;
 }
 
 button.primary {
@@ -113,6 +122,24 @@ input[type='text'] {
 
 input[type='search']:focus,
 input[type='text']:focus {
+  border-color: var(--accent);
+}
+
+select {
+  -webkit-appearance: none;
+  appearance: none;
+  font-family: inherit;
+  font-size: 12px;
+  padding: 4px 24px 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-secondary) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 8px center;
+  color: var(--fg);
+  cursor: pointer;
+  outline: none;
+}
+
+select:focus {
   border-color: var(--accent);
 }
 

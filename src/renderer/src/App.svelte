@@ -2,11 +2,12 @@
   import { onMount } from 'svelte'
   import LibraryView from './lib/views/LibraryView.svelte'
   import AddMusicView from './lib/views/AddMusicView.svelte'
+  import SettingsView from './lib/views/SettingsView.svelte'
   import { init, libraryPath, selectLibraryPath, settings, loadTracks, tracks } from './lib/stores/app'
   import { handleProgress, handleComplete, handleError } from './lib/stores/downloads'
 
   let ready = false
-  let tab: 'library' | 'addMusic' = 'library'
+  let tab: 'library' | 'addMusic' | 'settings' = 'library'
 
   onMount(async () => {
     await init()
@@ -59,13 +60,26 @@
         class:active={tab === 'addMusic'}
         on:click={() => (tab = 'addMusic')}
       >Add Music</button>
+      <button
+        class="gear"
+        class:active={tab === 'settings'}
+        title="Settings"
+        on:click={() => (tab = tab === 'settings' ? 'library' : 'settings')}
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
     </div>
 
     <!-- ── View ──────────────────────────────────────────────────────────── -->
     {#if tab === 'library'}
       <LibraryView />
-    {:else}
+    {:else if tab === 'addMusic'}
       <AddMusicView />
+    {:else}
+      <SettingsView />
     {/if}
   </div>
 {/if}
@@ -129,6 +143,7 @@
   /* ── Tab bar ────────────────────────────────────────────────────────── */
 
   .tab-bar {
+    position: relative;
     display: flex;
     align-items: stretch;
     justify-content: center;
@@ -164,6 +179,38 @@
   .tab.active {
     color: var(--fg);
     border-bottom-color: var(--accent);
+  }
+
+  .gear {
+    -webkit-app-region: no-drag;
+    -webkit-appearance: none;
+    appearance: none;
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius);
+    background: none;
+    color: var(--fg-muted);
+    cursor: pointer;
+    transition: color 0.1s, background 0.1s;
+  }
+
+  .gear:hover {
+    color: var(--fg);
+    background: var(--bg-hover);
+  }
+
+  .gear.active {
+    color: var(--accent);
+    background: var(--bg-hover);
   }
 
   .count {

@@ -45,8 +45,8 @@ const api = {
     search: (query: string): Promise<SearchResult[]> =>
       ipcRenderer.invoke('download:search', query),
 
-    start: (url: string, title: string, artist: string | null): Promise<string> =>
-      ipcRenderer.invoke('download:start', url, title, artist),
+    start: (url: string, title: string, artist: string | null, duration: number | null): Promise<string> =>
+      ipcRenderer.invoke('download:start', url, title, artist, duration),
 
     cancel: (jobId: string): Promise<void> =>
       ipcRenderer.invoke('download:cancel', jobId),

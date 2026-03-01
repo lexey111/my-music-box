@@ -160,6 +160,7 @@ export class DownloadService {
     url: string,
     title: string,
     artist: string | null,
+    duration: number | null,
     settings: Pick<AppSettings, 'bitrate' | 'normalization' | 'normalizationLufs' | 'cookiesBrowser'>,
     libraryService: LibraryService,
     sendProgress: (payload: { jobId: string; progress: number; status: JobStatus }) => void,
@@ -174,7 +175,7 @@ export class DownloadService {
 
     const tmpBase = join(tmpDir, jobId)
 
-    this.runDownload(jobId, url, title, artist, settings, libraryService, tmpBase, job, sendProgress, sendComplete, sendError)
+    this.runDownload(jobId, url, title, artist, duration, settings, libraryService, tmpBase, job, sendProgress, sendComplete, sendError)
   }
 
   private async runDownload(
@@ -182,6 +183,7 @@ export class DownloadService {
     url: string,
     title: string,
     artist: string | null,
+    duration: number | null,
     settings: Pick<AppSettings, 'bitrate' | 'normalization' | 'normalizationLufs' | 'cookiesBrowser'>,
     libraryService: LibraryService,
     tmpBase: string,
@@ -319,7 +321,7 @@ export class DownloadService {
           artist,
           original_query: null,
           source_url: url,
-          duration: null,
+          duration,
           bitrate: settings.bitrate,
           normalized: settings.normalization ? 1 : 0
         },

@@ -10,6 +10,8 @@ export interface AppSettings {
   normalizationLufs: number
   theme: 'light' | 'dark' | 'system'
   cookiesBrowser: CookiesBrowser
+  crossfade: boolean
+  crossfadeDuration: number
 }
 
 const defaults: AppSettings = {
@@ -18,7 +20,9 @@ const defaults: AppSettings = {
   normalization: true,
   normalizationLufs: -14,
   theme: 'system',
-  cookiesBrowser: 'safari'
+  cookiesBrowser: 'safari',
+  crossfade: false,
+  crossfadeDuration: 3
 }
 
 export class SettingsService {

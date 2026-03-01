@@ -12,7 +12,8 @@
     cancelDownload,
     dismissJob
   } from '../stores/downloads'
-  import { settings, setSetting } from '../stores/app'
+  import { settings, setSetting, tracks } from '../stores/app'
+  import Spinner from '../components/Spinner.svelte'
 
   const browserOptions: Array<{ value: CookiesBrowser; label: string }> = [
     { value: 'safari',   label: 'Safari' },
@@ -24,15 +25,31 @@
   ]
 
   let query = ''
+  let lastQuery = ''
 
-  onMount(() => { checkDeps() })
+  $: libraryUrls = new Set($tracks.map((t) => t.source_url).filter(Boolean) as string[])
+
+  $: activeUrls = new Set(
+    [...$activeJobs.values()]
+      .filter((j) => j.status === 'downloading' || j.status === 'processing')
+      .map((j) => j.url)
+  )
+
+  onMount(() => {
+    checkDeps()
+    searchResults.set([])
+    searchError.set(null)
+  })
 
   function handleKeydown(e: KeyboardEvent): void {
     if (e.key === 'Enter') search()
   }
 
   function search(): void {
-    if (query.trim()) doSearch(query.trim())
+    if (query.trim().length >= 3) {
+      lastQuery = query.trim()
+      doSearch(lastQuery)
+    }
   }
 
   function formatDuration(seconds: number | null): string {
@@ -63,7 +80,8 @@
       on:keydown={handleKeydown}
       disabled={$searching}
     />
-    <button on:click={search} disabled={$searching || !query.trim()}>
+    <button on:click={search} disabled={$searching || query.trim().length < 3}>
+      {#if $searching}<Spinner />{/if}
       {$searching ? 'Searching…' : 'Search'}
     </button>
     <label class="browser-label" title="Browser whose cookies yt-dlp will use to bypass bot detection">
@@ -99,7 +117,7 @@
     <!-- ── Search results ───────────────────────────────────────────────── -->
     {#if $searchResults.length > 0}
       <section>
-        <h2>Search Results</h2>
+        <h2>Results for "{lastQuery}"</h2>
         <table class="data-table">
           <thead>
             <tr>
@@ -112,7 +130,9 @@
           </thead>
           <tbody>
             {#each $searchResults as result, i (result.id)}
-              <tr>
+              {@const _url = result.webpage_url || result.url}
+              {@const status = libraryUrls.has(_url) ? 'library' : activeUrls.has(_url) ? 'downloading' : 'available'}
+              <tr class:row-owned={status !== 'available'}>
                 <td class="col-n muted">{i + 1}</td>
                 <td class="col-title">
                   <span class="title-text" title={result.title}>{result.title}</span>
@@ -128,7 +148,10 @@
                       <path d="M12 1L6.5 6.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
                     </svg>
                   </a>
-                  <button on:click={() => startDownload(result)}>Download</button>
+                  <button on:click={() => startDownload(result)} disabled={status !== 'available'}>
+                    {#if status === 'downloading'}<Spinner />{/if}
+                    {status === 'library' ? 'In Library' : status === 'downloading' ? 'Downloading…' : 'Download'}
+                  </button>
                 </td>
               </tr>
             {/each}
@@ -188,7 +211,13 @@
 
     <!-- ── Empty state ───────────────────────────────────────────────────── -->
     {#if !$searchError && $searchResults.length === 0 && $activeJobs.size === 0}
-      <div class="empty">Search YouTube to find music to add to your library.</div>
+      <div class="empty">
+        {#if $searching}
+          Searching for "{query}"…
+        {:else}
+          Search YouTube to find music to add to your library.
+        {/if}
+      </div>
     {/if}
   </div>
 </div>
@@ -372,6 +401,7 @@
     transition: width 0.3s ease;
   }
 
+  .row-owned td { color: var(--fg-muted); }
   .row-done .progress-fill { background: #22c55e; }
   .row-error .col-error     { padding-left: 8px; }
 

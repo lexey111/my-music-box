@@ -72,7 +72,7 @@ export function registerIpcHandlers({ settings, getLibrary, setLibrary, download
     downloadService.search(query, settings.get('cookiesBrowser'))
   )
 
-  ipcMain.handle('download:start', (event, url: string, title: string, artist: string | null) => {
+  ipcMain.handle('download:start', (event, url: string, title: string, artist: string | null, duration: number | null) => {
     const library = getLibrary()
     if (!library) throw new Error('No library selected')
 
@@ -84,6 +84,7 @@ export function registerIpcHandlers({ settings, getLibrary, setLibrary, download
       url,
       title,
       artist,
+      duration,
       { bitrate: s.bitrate, normalization: s.normalization, normalizationLufs: s.normalizationLufs, cookiesBrowser: s.cookiesBrowser },
       library,
       (payload) => {

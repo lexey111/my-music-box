@@ -2,6 +2,7 @@ import { writable } from 'svelte/store'
 
 export interface ClientJob {
   jobId: string
+  url: string
   title: string
   artist: string | null
   progress: number
@@ -23,6 +24,7 @@ export async function checkDeps(): Promise<void> {
 export async function doSearch(query: string): Promise<void> {
   searching.set(true)
   searchError.set(null)
+  searchResults.set([])
   try {
     const results = await window.api.download.search(query)
     searchResults.set(results)
@@ -37,13 +39,15 @@ export async function startDownload(result: SearchResult): Promise<void> {
   const jobId = await window.api.download.start(
     result.webpage_url || result.url,
     result.title,
-    result.uploader
+    result.uploader,
+    result.duration
   )
 
   activeJobs.update((m) => {
     const next = new Map(m)
     next.set(jobId, {
       jobId,
+      url: result.webpage_url || result.url,
       title: result.title,
       artist: result.uploader,
       progress: 0,

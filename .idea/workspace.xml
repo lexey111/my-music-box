@@ -4,14 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="baa64891-4534-4ae1-9d4e-4c8e9230231c" name="Changes" comment="Initial commit">
+    <list default="true" id="baa64891-4534-4ae1-9d4e-4c8e9230231c" name="Changes" comment="Working download">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/renderer/assets/index-BgF5oLxj.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/renderer/assets/index-C4ahJAyD.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/renderer/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/out/renderer/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/ipc/handlers.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/ipc/handlers.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/services/DownloadService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/services/DownloadService.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/services/SettingsService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/services/SettingsService.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/preload/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/preload/index.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/src/App.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/src/App.svelte" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/src/lib/components/DownloadPanel.svelte" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/src/lib/views/LibraryView.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/src/lib/views/LibraryView.svelte" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/src/app.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/src/app.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/src/env.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/src/env.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/src/lib/stores/downloads.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/src/lib/stores/downloads.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/src/lib/views/AddMusicView.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/src/lib/views/AddMusicView.svelte" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,7 +77,7 @@
       <workItem from="1772374642024" duration="927000" />
       <workItem from="1772375579255" duration="1785000" />
       <workItem from="1772377631245" duration="5596000" />
-      <workItem from="1772383484542" duration="406000" />
+      <workItem from="1772383484542" duration="3657000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <option name="closed" value="true" />
@@ -84,7 +87,15 @@
       <option name="project" value="LOCAL" />
       <updated>1772382746730</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Working download">
+      <option name="closed" value="true" />
+      <created>1772384097941</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1772384097941</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -92,6 +103,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Initial commit" />
-    <option name="LAST_COMMIT_MESSAGE" value="Initial commit" />
+    <MESSAGE value="Working download" />
+    <option name="LAST_COMMIT_MESSAGE" value="Working download" />
   </component>
 </project>

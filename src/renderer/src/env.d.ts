@@ -12,6 +12,8 @@ interface AppSettings {
   normalizationLufs: number
   theme: 'light' | 'dark' | 'system'
   cookiesBrowser: CookiesBrowser
+  crossfade: boolean
+  crossfadeDuration: number
 }
 
 interface Track {
@@ -83,7 +85,7 @@ declare global {
       download: {
         checkDeps: () => Promise<{ ytdlp: boolean; ffmpeg: boolean }>
         search: (query: string) => Promise<SearchResult[]>
-        start: (url: string, title: string, artist: string | null) => Promise<string>
+        start: (url: string, title: string, artist: string | null, duration: number | null) => Promise<string>
         cancel: (jobId: string) => Promise<void>
         onProgress: (cb: (payload: DownloadProgressPayload) => void) => () => void
         onComplete: (cb: (payload: DownloadCompletePayload) => void) => () => void
