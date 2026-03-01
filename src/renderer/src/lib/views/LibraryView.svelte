@@ -14,8 +14,6 @@
     clearSelection,
     selectLibraryPath
   } from '../stores/app'
-  import DownloadPanel from '../components/DownloadPanel.svelte'
-
   // ── Virtual list ───────────────────────────────────────────────────────────
 
   let listEl: HTMLDivElement | undefined
@@ -139,9 +137,6 @@
     </div>
   </div>
 
-  <!-- ── Download panel ────────────────────────────────────────────────── -->
-  <DownloadPanel on:trackAdded={() => loadTracks()} />
-
   <!-- ── Column headers ─────────────────────────────────────────────────── -->
   <div class="header-row">
     <span class="col-check"></span>
@@ -219,15 +214,10 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 12px 6px 80px;
+    padding: 6px 12px;
     height: var(--toolbar-height);
     border-bottom: 1px solid var(--border);
     background: var(--bg-secondary);
-    -webkit-app-region: drag; /* macOS draggable titlebar */
-  }
-
-  .toolbar > * {
-    -webkit-app-region: no-drag;
   }
 
   .toolbar input[type='search'] {

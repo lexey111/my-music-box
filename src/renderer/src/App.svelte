@@ -1,19 +1,28 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import LibraryView from './lib/views/LibraryView.svelte'
-  import { init, libraryPath, selectLibraryPath, settings } from './lib/stores/app'
+  import AddMusicView from './lib/views/AddMusicView.svelte'
+  import { init, libraryPath, selectLibraryPath, settings, loadTracks, tracks } from './lib/stores/app'
+  import { handleProgress, handleComplete, handleError } from './lib/stores/downloads'
 
   let ready = false
+  let tab: 'library' | 'addMusic' = 'library'
 
   onMount(async () => {
     await init()
     ready = true
-
-    // Sync theme with system preference and the saved setting
     applyTheme($settings.theme)
+
+    // Register download listeners once for the app lifetime so progress is
+    // tracked even when the user is on the Library tab.
+    window.api.download.onProgress(handleProgress)
+    window.api.download.onComplete((payload) => {
+      handleComplete(payload)
+      loadTracks()
+    })
+    window.api.download.onError(handleError)
   })
 
-  // Re-apply whenever theme setting changes
   $: applyTheme($settings.theme)
 
   function applyTheme(theme: AppSettings['theme']): void {
@@ -37,10 +46,33 @@
     </div>
   </div>
 {:else}
-  <LibraryView />
+  <div class="app-shell">
+    <!-- ── Tab bar (macOS drag region) ──────────────────────────────────── -->
+    <div class="tab-bar">
+      <button
+        class="tab"
+        class:active={tab === 'library'}
+        on:click={() => (tab = 'library')}
+      >Library {#if $tracks.length > 0}<span class="count">{$tracks.length}</span>{/if}</button>
+      <button
+        class="tab"
+        class:active={tab === 'addMusic'}
+        on:click={() => (tab = 'addMusic')}
+      >Add Music</button>
+    </div>
+
+    <!-- ── View ──────────────────────────────────────────────────────────── -->
+    {#if tab === 'library'}
+      <LibraryView />
+    {:else}
+      <AddMusicView />
+    {/if}
+  </div>
 {/if}
 
 <style>
+  /* ── Setup screen ───────────────────────────────────────────────────── */
+
   .setup {
     flex: 1;
     display: flex;
@@ -85,8 +117,68 @@
     border-radius: 3px;
   }
 
-  button {
-    padding: 8px 20px;
+  /* ── App shell ──────────────────────────────────────────────────────── */
+
+  .app-shell {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── Tab bar ────────────────────────────────────────────────────────── */
+
+  .tab-bar {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    height: var(--toolbar-height);
+    padding: 0 80px; /* clear macOS traffic lights symmetrically */
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-secondary);
+    -webkit-app-region: drag;
+    flex-shrink: 0;
+  }
+
+  .tab {
+    -webkit-app-region: no-drag;
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 0;
+    padding: 0 18px;
     font-size: 13px;
+    font-weight: 500;
+    color: var(--fg-muted);
+    cursor: pointer;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px; /* overlap the tab-bar bottom border */
+    transition: color 0.1s;
+  }
+
+  .tab:hover {
+    color: var(--fg);
+  }
+
+  .tab.active {
+    color: var(--fg);
+    border-bottom-color: var(--accent);
+  }
+
+  .count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 16px;
+    padding: 0 5px;
+    border-radius: 8px;
+    background: var(--bg-tertiary, var(--border));
+    color: var(--fg-muted);
+    font-size: 11px;
+    font-weight: 500;
+    margin-left: 5px;
+    vertical-align: middle;
   }
 </style>
