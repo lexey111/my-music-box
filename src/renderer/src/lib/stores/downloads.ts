@@ -15,6 +15,27 @@ export const searchResults = writable<SearchResult[]>([])
 export const searching = writable(false)
 export const searchError = writable<string | null>(null)
 export const activeJobs = writable<Map<string, ClientJob>>(new Map())
+export const pendingQuery = writable<string>('')
+
+export function redownloadTrack(track: Track): void {
+  searchError.set(null)
+  searching.set(false)
+  const q = [track.title, track.artist].filter(Boolean).join(' ')
+  pendingQuery.set(q)
+  if (track.source_url) {
+    searchResults.set([{
+      id: track.source_url,
+      title: track.title,
+      uploader: track.artist,
+      duration: track.duration,
+      url: track.source_url,
+      webpage_url: track.source_url,
+      thumbnail: null
+    }])
+  } else {
+    searchResults.set([])
+  }
+}
 
 export async function checkDeps(): Promise<void> {
   const result = await window.api.download.checkDeps()

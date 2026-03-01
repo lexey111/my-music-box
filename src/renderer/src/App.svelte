@@ -1,30 +1,81 @@
 <script lang="ts">
-  import { onMount } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
   import LibraryView from './lib/views/LibraryView.svelte'
   import AddMusicView from './lib/views/AddMusicView.svelte'
   import SettingsView from './lib/views/SettingsView.svelte'
-  import { init, libraryPath, selectLibraryPath, settings, loadTracks, tracks } from './lib/stores/app'
+  import { init, libraryPath, selectLibraryPath, settings, loadTracks, tracks, activeTab } from './lib/stores/app'
   import { handleProgress, handleComplete, handleError } from './lib/stores/downloads'
 
   let ready = false
-  let tab: 'library' | 'addMusic' | 'settings' = 'library'
+  let memMB = ''
+  let memTimer: ReturnType<typeof setInterval>
 
   onMount(async () => {
     await init()
     ready = true
     applyTheme($settings.theme)
 
-    // Register download listeners once for the app lifetime so progress is
-    // tracked even when the user is on the Library tab.
     window.api.download.onProgress(handleProgress)
     window.api.download.onComplete((payload) => {
       handleComplete(payload)
       loadTracks()
     })
     window.api.download.onError(handleError)
+
+    updateMem()
+    memTimer = setInterval(updateMem, 3000)
   })
 
+  onDestroy(() => clearInterval(memTimer))
+
+  async function updateMem(): Promise<void> {
+    const mb = await window.api.app.getMemoryMB()
+    memMB = `${mb} MB`
+  }
+
   $: applyTheme($settings.theme)
+
+  $: totalDuration = $tracks.reduce((sum, t) => sum + (t.duration ?? 0), 0)
+
+  function formatTotalDuration(s: number): string {
+    if (s === 0) return ''
+    s = Math.round(s)
+
+    // Under 1 hour: exact M:SS
+    if (s < 3600) {
+      const m = Math.floor(s / 60)
+      const sec = s % 60
+      return `${m}:${String(sec).padStart(2, '0')}`
+    }
+
+    const h = Math.floor(s / 3600)
+    const remSec = s % 3600
+    const remMin = Math.floor(remSec / 60)
+
+    // Under 1 day: fuzzy hours
+    if (s < 86400) {
+      if (remSec >= 3540) return `almost ${h + 1} hours`
+      if (remSec <= 180)  return `about ${h} hour${h !== 1 ? 's' : ''}`
+      if (remMin >= 27 && remMin <= 33) return `${h === 1 ? 'one' : h} and a half hours`
+      return `${h}h ${remMin}m`
+    }
+
+    // Under 1 week: days + hours
+    if (s < 604800) {
+      const d = Math.floor(s / 86400)
+      const rh = Math.floor((s % 86400) / 3600)
+      return `${d} day${d !== 1 ? 's' : ''}${rh > 0 ? ` and ${rh} hour${rh !== 1 ? 's' : ''}` : ''}`
+    }
+
+    // Weeks
+    const w = Math.floor(s / 604800)
+    const d = Math.floor((s % 604800) / 86400)
+    const rh = Math.floor((s % 86400) / 3600)
+    let result = `${w} week${w !== 1 ? 's' : ''}`
+    if (d > 0) result += `, ${d} day${d !== 1 ? 's' : ''}`
+    if (rh > 0) result += ` and ${rh} hour${rh !== 1 ? 's' : ''}`
+    return result
+  }
 
   function applyTheme(theme: AppSettings['theme']): void {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -52,19 +103,19 @@
     <div class="tab-bar">
       <button
         class="tab"
-        class:active={tab === 'library'}
-        on:click={() => (tab = 'library')}
+        class:active={$activeTab === 'library'}
+        on:click={() => ($activeTab = 'library')}
       >Library {#if $tracks.length > 0}<span class="count">{$tracks.length}</span>{/if}</button>
       <button
         class="tab"
-        class:active={tab === 'addMusic'}
-        on:click={() => (tab = 'addMusic')}
+        class:active={$activeTab === 'addMusic'}
+        on:click={() => ($activeTab = 'addMusic')}
       >Add Music</button>
       <button
         class="gear"
-        class:active={tab === 'settings'}
+        class:active={$activeTab === 'settings'}
         title="Settings"
-        on:click={() => (tab = tab === 'settings' ? 'library' : 'settings')}
+        on:click={() => ($activeTab = $activeTab === 'settings' ? 'library' : 'settings')}
       >
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="3"/>
@@ -74,13 +125,36 @@
     </div>
 
     <!-- ── View ──────────────────────────────────────────────────────────── -->
-    {#if tab === 'library'}
+    {#if $activeTab === 'library'}
       <LibraryView />
-    {:else if tab === 'addMusic'}
+    {:else if $activeTab === 'addMusic'}
       <AddMusicView />
     {:else}
       <SettingsView />
     {/if}
+
+    <!-- ── Status bar ────────────────────────────────────────────────────── -->
+    <div class="statusbar">
+      <span class="statusbar-path">{$libraryPath ?? ''}</span>
+      <span class="statusbar-sep"></span>
+      <!-- svelte-ignore a11y-invalid-attribute -->
+      <a class="statusbar-link" href="#" on:click|preventDefault={() => ($activeTab = 'settings')}>Change…</a>
+      <span class="statusbar-right">
+        {#if $tracks.length > 0}
+          <span class="statusbar-stat">{$tracks.length} tracks</span>
+          {#if totalDuration > 0}
+            <span class="statusbar-sep"></span>
+            <span class="statusbar-stat">{formatTotalDuration(totalDuration)}</span>
+          {/if}
+          {#if memMB}
+            <span class="statusbar-sep"></span>
+          {/if}
+        {/if}
+        {#if memMB}
+          <span class="statusbar-stat">{memMB}</span>
+        {/if}
+      </span>
+    </div>
   </div>
 {/if}
 
@@ -211,6 +285,71 @@
   .gear.active {
     color: var(--accent);
     background: var(--bg-hover);
+  }
+
+  /* ── Status bar ─────────────────────────────────────────────────────── */
+
+  .statusbar {
+    height: 22px;
+    padding: 0 12px;
+    display: flex;
+    align-items: stretch;
+    border-top: 1px solid var(--border);
+    background: var(--bg-secondary);
+    flex-shrink: 0;
+    font-size: 11px;
+    color: var(--fg-muted);
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .statusbar-path {
+    font-family: var(--font-mono);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex-shrink: 1;
+    display: flex;
+    align-items: center;
+    padding: 0 6px 0 0;
+  }
+
+  .statusbar-sep {
+    flex-shrink: 0;
+    width: 1px;
+    align-self: stretch;
+    background: var(--border);
+    margin: 3px 6px;
+  }
+
+  .statusbar-link {
+    color: var(--fg-muted);
+    text-decoration: none;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+  }
+
+  .statusbar-link:hover {
+    color: var(--fg);
+    text-decoration: underline;
+  }
+
+  .statusbar-right {
+    margin-left: auto;
+    display: flex;
+    align-items: stretch;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .statusbar-stat {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    font-variant-numeric: tabular-nums;
+    padding: 0 6px;
   }
 
   .count {

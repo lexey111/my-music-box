@@ -1,19 +1,23 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte'
   import { createVirtualizer } from '@tanstack/svelte-virtual'
   import {
     tracks,
     search,
     loading,
     selectedIds,
-    libraryPath,
     loadTracks,
     deleteTracks,
     sync,
     toggleSelect,
     clearSelection,
-    selectLibraryPath
+    activeTab
   } from '../stores/app'
+  import { redownloadTrack } from '../stores/downloads'
+
+  function handleRedownload(track: Track): void {
+    redownloadTrack(track)
+    $activeTab = 'addMusic'
+  }
   // ── Virtual list ───────────────────────────────────────────────────────────
 
   let listEl: HTMLDivElement | undefined
@@ -66,18 +70,6 @@
     }
   }
 
-  // ── Memory usage ───────────────────────────────────────────────────────────
-
-  let memMB = ''
-  let memTimer: ReturnType<typeof setInterval>
-
-  async function updateMem(): Promise<void> {
-    const mb = await window.api.app.getMemoryMB()
-    memMB = `${mb} MB`
-  }
-
-  onMount(() => { updateMem(); memTimer = setInterval(updateMem, 3000) })
-  onDestroy(() => clearInterval(memTimer))
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -145,6 +137,7 @@
     <span class="col-artist">Artist</span>
     <span class="col-duration">Duration</span>
     <span class="col-size">Size</span>
+    <span class="col-action"></span>
   </div>
 
   <!-- ── Virtual list ───────────────────────────────────────────────────── -->
@@ -182,22 +175,19 @@
             <span class="col-artist" title={track.artist ?? ''}>{track.artist ?? '—'}</span>
             <span class="col-duration">{formatDuration(track.duration)}</span>
             <span class="col-size">{formatSize(track.file_size)}</span>
+            <span class="col-action">
+              {#if track.status === 'missing'}
+                <button class="btn-redownload" on:click|stopPropagation={() => handleRedownload(track)}>
+                  Download again
+                </button>
+              {/if}
+            </span>
           </div>
         {/each}
       </div>
     {/if}
   </div>
 
-  <!-- ── Status bar ─────────────────────────────────────────────────────── -->
-  <div class="statusbar">
-    <span class="statusbar-path">[{$libraryPath ?? ''}]</span>
-    <span class="statusbar-sep">—</span>
-    <!-- svelte-ignore a11y-invalid-attribute -->
-    <a class="statusbar-link" href="#" on:click|preventDefault={selectLibraryPath}>Click here to change library folder…</a>
-    {#if memMB}
-      <span class="statusbar-mem">{memMB}</span>
-    {/if}
-  </div>
 </div>
 
 <style>
@@ -296,12 +286,18 @@
 
   /* ── Columns ────────────────────────────────────────────────────────────── */
 
-  .col-check  { width: 28px; flex-shrink: 0; }
-  .col-status { width: 20px; flex-shrink: 0; }
+  .col-check  { width: 28px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .col-status { width: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
   .col-title  { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 12px; }
   .col-artist { width: 180px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg-muted); padding-right: 12px; }
   .col-duration { width: 64px; flex-shrink: 0; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
   .col-size   { width: 72px; flex-shrink: 0; color: var(--fg-muted); text-align: right; font-variant-numeric: tabular-nums; }
+  .col-action { width: 120px; flex-shrink: 0; display: flex; align-items: center; justify-content: flex-end; padding-right: 4px; }
+
+  .btn-redownload {
+    font-size: 11px;
+    padding: 2px 8px;
+  }
 
   /* ── Status dot ─────────────────────────────────────────────────────────── */
 
@@ -328,51 +324,4 @@
     font-size: 13px;
   }
 
-  /* ── Status bar ─────────────────────────────────────────────────────────── */
-
-  .statusbar {
-    height: 22px;
-    padding: 0 12px;
-    display: flex;
-    align-items: center;
-    border-top: 1px solid var(--border);
-    background: var(--bg-secondary);
-  }
-
-  .statusbar-path {
-    font-size: 11px;
-    color: var(--fg-muted);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-family: var(--font-mono);
-  }
-
-  .statusbar-sep {
-    font-size: 11px;
-    color: var(--fg-muted);
-    flex-shrink: 0;
-    margin: 0 6px;
-  }
-
-  .statusbar-link {
-    font-size: 11px;
-    color: var(--fg-muted);
-    white-space: nowrap;
-    flex-shrink: 0;
-    text-decoration: none;
-  }
-
-  .statusbar-link:hover {
-    color: var(--fg);
-    text-decoration: underline;
-  }
-
-  .statusbar-mem {
-    margin-left: auto;
-    font-size: 11px;
-    color: var(--fg-muted);
-    white-space: nowrap;
-    font-variant-numeric: tabular-nums;
-  }
 </style>

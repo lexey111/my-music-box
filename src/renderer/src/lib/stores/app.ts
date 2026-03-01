@@ -14,6 +14,7 @@ export const tracks = writable<Track[]>([])
 export const search = writable('')
 export const loading = writable(false)
 export const selectedIds = writable<Set<number>>(new Set())
+export const activeTab = writable<'library' | 'addMusic' | 'settings'>('library')
 
 export const libraryPath = derived(settings, ($s) => $s.libraryPath)
 

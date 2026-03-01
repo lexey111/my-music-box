@@ -147,11 +147,26 @@ export class LibraryService {
   }
 
   insertTrack(input: InsertTrackInput, tempFilePath: string): Track {
-    const stmt = this.db.prepare(`
+    // If a track with the same source_url already exists (e.g. missing), update it
+    const existing = input.source_url
+      ? (this.db.prepare('SELECT * FROM tracks WHERE source_url = ?').get(input.source_url) as Track | undefined)
+      : undefined
+
+    if (existing) {
+      const dest = this.filePath(existing.id)
+      renameSync(tempFilePath, dest)
+      const { size } = statSync(dest)
+      const hash = this.md5(dest)
+      this.db.prepare(`
+        UPDATE tracks SET title=?, artist=?, duration=?, bitrate=?, normalized=?, status='ok', file_size=?, hash=? WHERE id=?
+      `).run(input.title, input.artist, input.duration, input.bitrate, input.normalized, size, hash, existing.id)
+      return this.getTrack(existing.id)!
+    }
+
+    const result = this.db.prepare(`
       INSERT INTO tracks (title, artist, original_query, source_url, duration, bitrate, normalized)
       VALUES (@title, @artist, @original_query, @source_url, @duration, @bitrate, @normalized)
-    `)
-    const result = stmt.run(input)
+    `).run(input)
     const id = result.lastInsertRowid as number
 
     const dest = this.filePath(id)

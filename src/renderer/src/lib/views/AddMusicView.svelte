@@ -1,11 +1,13 @@
 <script lang="ts">
   import { onMount } from 'svelte'
+  import { get } from 'svelte/store'
   import {
     deps,
     searchResults,
     searchError,
     searching,
     activeJobs,
+    pendingQuery,
     checkDeps,
     doSearch,
     startDownload,
@@ -27,7 +29,7 @@
   let query = ''
   let lastQuery = ''
 
-  $: libraryUrls = new Set($tracks.map((t) => t.source_url).filter(Boolean) as string[])
+  $: libraryUrls = new Set($tracks.filter((t) => t.status === 'ok').map((t) => t.source_url).filter(Boolean) as string[])
 
   $: activeUrls = new Set(
     [...$activeJobs.values()]
@@ -37,8 +39,17 @@
 
   onMount(() => {
     checkDeps()
-    searchResults.set([])
-    searchError.set(null)
+    const pq = get(pendingQuery)
+    if (pq) {
+      query = pq
+      lastQuery = pq
+      pendingQuery.set('')
+      // If no pre-filled results (no source_url), trigger a real search
+      if (get(searchResults).length === 0) doSearch(pq)
+    } else {
+      searchResults.set([])
+      searchError.set(null)
+    }
   })
 
   function handleKeydown(e: KeyboardEvent): void {
