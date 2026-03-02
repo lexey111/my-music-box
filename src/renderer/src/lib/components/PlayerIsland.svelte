@@ -3,6 +3,8 @@
   import { player, playAll, togglePlay, playNext, playPrev, seek, setVolume } from '../stores/player'
 
   let volume = 1
+  let islandWidth = 0
+  $: isWide = islandWidth > 800
 
   function formatTime(seconds: number): string {
     if (!isFinite(seconds) || seconds < 0) return '0:00'
@@ -28,13 +30,11 @@
     : 'No track'
 </script>
 
-<div class="player-island">
-  <!-- ── Transport row ─────────────────────────────────────────────────────── -->
-  <div class="controls">
-    <button class="btn-play-all" on:click={() => playAll($tracks)}>
-      ⇌ Play All
-    </button>
+<div class="player-island" class:wide={isWide} bind:clientWidth={islandWidth}>
 
+  <!-- Transport buttons + Play All -->
+  <div class="controls">
+    <button class="btn-play-all" on:click={() => playAll($tracks)}>⇌ Play All</button>
     <div class="transport">
       <button class="transport-btn" disabled={!queueActive} on:click={playPrev} title="Previous">⏮</button>
       <button
@@ -45,35 +45,32 @@
       >{$player.isPlaying ? '⏸' : '▶'}</button>
       <button class="transport-btn" disabled={!queueActive} on:click={playNext} title="Next">⏭</button>
     </div>
-
-    <span class="track-label" title={trackLabel}>{trackLabel}</span>
   </div>
 
-  <!-- ── Scrubber row ──────────────────────────────────────────────────────── -->
+  <!-- Track title — between transport and scrubber in wide mode -->
+  <span class="track-label" title={trackLabel}>{trackLabel}</span>
+
+  <!-- Progress bar + time + volume -->
   <div class="scrubber-row">
     <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
     <div class="progress-bar" on:click={handleProgressClick}>
       <div class="progress-fill" style="width: {progress}%"></div>
     </div>
-
-    <span class="time">
-      {formatTime($player.currentTime)}&nbsp;/&nbsp;{formatTime($player.duration)}
-    </span>
-
+    <span class="time">{formatTime($player.currentTime)}&nbsp;/&nbsp;{formatTime($player.duration)}</span>
     <input
       class="volume-slider"
-      type="range"
-      min="0"
-      max="1"
-      step="0.02"
+      type="range" min="0" max="1" step="0.02"
       value={volume}
       on:input={handleVolumeChange}
       title="Volume"
     />
   </div>
+
 </div>
 
 <style>
+  /* ── Base (narrow / two-line) ─────────────────────────────────────────────── */
+
   .player-island {
     background: var(--bg);
     border-radius: 8px;
@@ -84,12 +81,11 @@
     flex-shrink: 0;
   }
 
-  /* ── Transport row ─────────────────────────────────────────────────────── */
-
   .controls {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    flex-shrink: 0;
   }
 
   .btn-play-all {
@@ -128,6 +124,7 @@
     font-size: 14px;
   }
 
+  /* In narrow mode the label sits on the same line as controls */
   .track-label {
     flex: 1;
     min-width: 0;
@@ -138,7 +135,40 @@
     color: var(--fg);
   }
 
-  /* ── Scrubber row ──────────────────────────────────────────────────────── */
+  /* Narrow: controls + label share the first line via the column's implicit row */
+  .player-island:not(.wide) .controls {
+    /* Let the label (sibling) sit next to controls by wrapping them in a row */
+  }
+
+  /* Achieve "controls + label on one line" in narrow mode without an extra wrapper:
+     make the island's column behave as a two-row grid where row 1 is a flex row. */
+  .player-island:not(.wide) {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 10px;
+    row-gap: 6px;
+  }
+
+  .player-island:not(.wide) .controls   { grid-column: 1; grid-row: 1; }
+  .player-island:not(.wide) .track-label { grid-column: 2; grid-row: 1; align-self: center; }
+  .player-island:not(.wide) .scrubber-row { grid-column: 1 / -1; grid-row: 2; }
+
+  /* ── Wide (single-line) ───────────────────────────────────────────────────── */
+
+  .wide {
+    flex-direction: row;
+    align-items: center;
+    padding: 0 14px;
+    gap: 12px;
+    height: 48px;
+  }
+
+  .wide .controls   { flex-shrink: 0; }
+  .wide .track-label { flex: 0 1 200px; }   /* grows up to 200px, can shrink */
+  .wide .scrubber-row { flex: 1; min-width: 0; }
+
+  /* ── Scrubber row (shared) ────────────────────────────────────────────────── */
 
   .scrubber-row {
     display: flex;

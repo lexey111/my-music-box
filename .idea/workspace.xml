@@ -4,11 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="baa64891-4534-4ae1-9d4e-4c8e9230231c" name="Changes" comment="Player">
+    <list default="true" id="baa64891-4534-4ae1-9d4e-4c8e9230231c" name="Changes" comment="Fix playing deleted tracks">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/src/lib/components/PlayerIsland.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/src/lib/components/PlayerIsland.svelte" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/src/lib/stores/app.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/src/lib/stores/app.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/src/lib/stores/player.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/src/lib/stores/player.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -72,7 +70,7 @@
       <workItem from="1772375579255" duration="1785000" />
       <workItem from="1772377631245" duration="5596000" />
       <workItem from="1772383484542" duration="15767000" />
-      <workItem from="1772436548292" duration="6123000" />
+      <workItem from="1772436548292" duration="7222000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <option name="closed" value="true" />
@@ -130,7 +128,15 @@
       <option name="project" value="LOCAL" />
       <updated>1772442001423</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Fix playing deleted tracks">
+      <option name="closed" value="true" />
+      <created>1772443476208</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1772443476208</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -146,6 +152,7 @@
     <MESSAGE value="New style (islands)" />
     <MESSAGE value="Fix themes" />
     <MESSAGE value="Player" />
-    <option name="LAST_COMMIT_MESSAGE" value="Player" />
+    <MESSAGE value="Fix playing deleted tracks" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix playing deleted tracks" />
   </component>
 </project>
