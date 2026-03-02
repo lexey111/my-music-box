@@ -197,3 +197,40 @@ export function seek(ratio: number): void {
     audio.currentTime = ratio * s.duration
   }
 }
+
+export function setVolume(v: number): void {
+  audio.volume = Math.min(1, Math.max(0, v))
+}
+
+export function notifyTracksDeleted(ids: number[]): void {
+  const idSet = new Set(ids)
+  const s = get(player)
+
+  // Remove deleted tracks from the queue
+  const newQueue = s.queue.filter((t) => !idSet.has(t.id))
+
+  const currentDeleted = s.currentTrack && idSet.has(s.currentTrack.id)
+
+  if (!currentDeleted) {
+    // Just prune the queue, keep playing
+    const newIndex = Math.min(s.queueIndex, newQueue.length - 1)
+    player.update((st) => ({ ...st, queue: newQueue, queueIndex: Math.max(0, newIndex) }))
+    return
+  }
+
+  // Current track was deleted — stop audio immediately
+  audio.pause()
+  audio.src = ''
+  if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null }
+
+  if (s.mode === 'queue' && newQueue.length > 0) {
+    // Advance to the next surviving track (same index or last)
+    const nextIndex = Math.min(s.queueIndex, newQueue.length - 1)
+    player.update((st) => ({ ...st, queue: newQueue, queueIndex: nextIndex, currentTrack: null }))
+    playQueueTrack(nextIndex)
+  } else {
+    player.update(() => ({ ...initialState }))
+    syncMediaSession(null, false)
+  }
+}
+

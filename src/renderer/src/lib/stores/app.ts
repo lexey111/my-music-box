@@ -1,4 +1,5 @@
 import { writable, derived, get } from 'svelte/store'
+import { notifyTracksDeleted } from './player'
 
 // ── Core state ────────────────────────────────────────────────────────────────
 
@@ -50,6 +51,7 @@ export async function selectLibraryPath(): Promise<void> {
 
 export async function deleteTracks(ids: number[]): Promise<void> {
   if (ids.length === 0) return
+  notifyTracksDeleted(ids)
   await window.api.library.deleteTracks(ids)
   selectedIds.set(new Set())
   await loadTracks()
