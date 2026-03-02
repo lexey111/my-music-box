@@ -183,12 +183,26 @@
               {:else}
                 {@const isActive = $player.currentTrack?.id === track.id}
                 {@const isPlaying = isActive && $player.isPlaying}
+                {@const progress = isActive && $player.duration > 0 ? $player.currentTime / $player.duration : 0}
+                {@const circ = 2 * Math.PI * 12}
                 <button
                   class="btn-play"
                   class:active={isActive}
                   on:click|stopPropagation={() => isActive ? togglePlay() : playTrack(track, $tracks)}
                   title={isPlaying ? 'Pause' : 'Play'}
-                >{isPlaying ? '⏸' : '▶'}</button>
+                >
+                  {#if isActive}
+                    <svg class="progress-ring" viewBox="0 0 30 30" aria-hidden="true">
+                      <circle class="ring-track" cx="15" cy="15" r="12" />
+                      <circle
+                        class="ring-fill"
+                        cx="15" cy="15" r="12"
+                        style="stroke-dasharray: {circ}; stroke-dashoffset: {circ * (1 - progress)}"
+                      />
+                    </svg>
+                  {/if}
+                  {isPlaying ? '⏸' : '▶'}
+                </button>
               {/if}
             </span>
           </div>
@@ -321,12 +335,16 @@
   /* ── Play button ─────────────────────────────────────────────────────────── */
 
   .btn-play {
-    width: 26px;
-    height: 26px;
+    position: relative;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     font-size: 10px;
     padding: 0;
     line-height: 1;
+    border: none;
+    box-shadow: none;
+    background: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -334,14 +352,44 @@
     transition: opacity 0.12s;
   }
 
-  .track-row:hover .btn-play {
-    opacity: 0.55;
+  /* inactive: show on row hover with a proper circle button look */
+  .track-row:hover .btn-play:not(.active) {
+    opacity: 0.6;
+    border: 1px solid var(--button-border);
+    background: var(--bg);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
   }
 
-  .btn-play:hover,
+  .track-row:hover .btn-play:not(.active):hover {
+    opacity: 1;
+    color: var(--accent);
+  }
+
+  /* active: always visible, ring handles the circle */
   .btn-play.active {
     opacity: 1;
     color: var(--accent);
+  }
+
+  .progress-ring {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    transform: rotate(-90deg);
+  }
+
+  .ring-track {
+    fill: none;
+    stroke: var(--separator);
+    stroke-width: 2;
+  }
+
+  .ring-fill {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.25s linear;
   }
 
   /* ── Empty state ────────────────────────────────────────────────────────── */
