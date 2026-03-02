@@ -1,8 +1,16 @@
 # my-music-box
 
-A personal desktop music player and local collection manager built with Electron + Svelte.
+A personal desktop app for building and managing a flat-file music collection — built with Electron + Svelte.
 
-Search YouTube, download audio, and manage your library — all in one place.
+The main use case is a car stereo (or any device) that plays audio from a USB drive or SD card. You search YouTube, download tracks as MP3s, and sync the collection to a folder that you copy to your drive. Everything stays as plain files — no proprietary library format, no cloud dependency.
+
+**What it does:**
+
+- Search YouTube and download audio as normalized MP3s via yt-dlp + ffmpeg
+- Keep a local SQLite catalogue (title, artist, duration, file size, status)
+- Play tracks directly in the app with a queue, scrubber, and mini player mode
+- Detect missing files and re-download them if needed
+- Sync check to reconcile the catalogue against files on disk
 
 ## Requirements
 
