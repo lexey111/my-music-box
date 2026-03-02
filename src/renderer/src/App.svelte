@@ -4,7 +4,7 @@
     import AddMusicView from './lib/views/AddMusicView.svelte'
     import SettingsView from './lib/views/SettingsView.svelte'
     import {init, libraryPath, selectLibraryPath, settings, loadTracks, tracks, activeTab} from './lib/stores/app'
-    import {handleProgress, handleComplete, handleError} from './lib/stores/downloads'
+    import {handleProgress, handleComplete, handleError, activeJobs} from './lib/stores/downloads'
     import PlayerIsland from './lib/components/PlayerIsland.svelte'
 
     let isMini = false
@@ -164,6 +164,7 @@
                 <span class="statusbar-path">{$libraryPath ?? ''}</span>&middot;
                 <!-- svelte-ignore a11y-invalid-attribute -->
                 <a class="statusbar-link" href="#" on:click|preventDefault={() => ($activeTab = 'settings')}>Change…</a>
+                {#if [...$activeJobs.values()].some(j => j.status === 'downloading')}<span class="statusbar-spinner" aria-label="Downloading"></span>{/if}
                 <span class="statusbar-right">
         {#if $tracks.length > 0}
           <span class="statusbar-stat">{$tracks.length} tracks</span>
@@ -362,6 +363,21 @@
         color: var(--fg-muted);
         white-space: nowrap;
         overflow: hidden;
+    }
+
+    .statusbar-spinner {
+        width: 10px;
+        height: 10px;
+        border: 1.5px solid var(--border);
+        border-top-color: var(--fg-muted);
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        flex-shrink: 0;
+        margin-left: 6px;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
     }
 
     .statusbar-path {

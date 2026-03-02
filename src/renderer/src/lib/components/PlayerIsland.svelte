@@ -121,6 +121,7 @@
     border-radius: 50%;
     font-size: 13px;
     padding: 0;
+    line-height: 1;
     display: flex;
     align-items: center;
     justify-content: center;

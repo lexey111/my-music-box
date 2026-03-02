@@ -13,7 +13,7 @@
     activeTab
   } from '../stores/app'
   import { redownloadTrack } from '../stores/downloads'
-  import { player, playTrack } from '../stores/player'
+  import { player, playTrack, togglePlay } from '../stores/player'
 
   function handleRedownload(track: Track): void {
     redownloadTrack(track)
@@ -124,7 +124,7 @@
         </span>
       {/if}
       <button on:click={handleSync} disabled={syncing}>
-        {syncing ? 'Syncing…' : 'Sync'}
+        {syncing ? 'Checking…' : 'Check files'}
       </button>
     </div>
   </div>
@@ -181,12 +181,14 @@
                   Download again
                 </button>
               {:else}
+                {@const isActive = $player.currentTrack?.id === track.id}
+                {@const isPlaying = isActive && $player.isPlaying}
                 <button
                   class="btn-play"
-                  class:active={$player.currentTrack?.id === track.id}
-                  on:click|stopPropagation={() => playTrack(track, $tracks)}
-                  title="Play"
-                >▶</button>
+                  class:active={isActive}
+                  on:click|stopPropagation={() => isActive ? togglePlay() : playTrack(track, $tracks)}
+                  title={isPlaying ? 'Pause' : 'Play'}
+                >{isPlaying ? '⏸' : '▶'}</button>
               {/if}
             </span>
           </div>
@@ -324,6 +326,7 @@
     border-radius: 50%;
     font-size: 10px;
     padding: 0;
+    line-height: 1;
     display: flex;
     align-items: center;
     justify-content: center;

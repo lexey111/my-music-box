@@ -4,10 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="baa64891-4534-4ae1-9d4e-4c8e9230231c" name="Changes" comment="Fix animation">
+    <list default="true" id="baa64891-4534-4ae1-9d4e-4c8e9230231c" name="Changes" comment="Tune styles">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/src/App.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/src/App.svelte" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/src/app.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/src/app.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/src/lib/views/LibraryView.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/src/lib/views/LibraryView.svelte" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -72,7 +72,8 @@
       <workItem from="1772377631245" duration="5596000" />
       <workItem from="1772383484542" duration="15767000" />
       <workItem from="1772436548292" duration="10433000" />
-      <workItem from="1772450226902" duration="6192000" />
+      <workItem from="1772450226902" duration="6718000" />
+      <workItem from="1772466593140" duration="441000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <option name="closed" value="true" />
@@ -186,7 +187,15 @@
       <option name="project" value="LOCAL" />
       <updated>1772457316576</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="Tune styles">
+      <option name="closed" value="true" />
+      <created>1772457775307</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1772457775307</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -209,6 +218,7 @@
     <MESSAGE value="Mini player modes" />
     <MESSAGE value="Fix oscillation" />
     <MESSAGE value="Fix animation" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix animation" />
+    <MESSAGE value="Tune styles" />
+    <option name="LAST_COMMIT_MESSAGE" value="Tune styles" />
   </component>
 </project>
