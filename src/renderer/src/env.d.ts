@@ -93,6 +93,10 @@ declare global {
         onComplete: (cb: (payload: DownloadCompletePayload) => void) => () => void
         onError: (cb: (payload: DownloadErrorPayload) => void) => () => void
       }
+      player: {
+        setMiniMode: (mini: boolean) => Promise<void>
+        notifyLayoutChanged: (isWide: boolean) => Promise<void>
+      }
     }
   }
 }

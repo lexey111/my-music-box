@@ -41,6 +41,13 @@ const api = {
       ipcRenderer.invoke('app:getMemoryMB')
   },
 
+  player: {
+    setMiniMode: (mini: boolean): Promise<void> =>
+      ipcRenderer.invoke('player:setMiniMode', mini),
+    notifyLayoutChanged: (isWide: boolean): Promise<void> =>
+      ipcRenderer.invoke('player:notifyLayoutChanged', isWide)
+  },
+
   download: {
     checkDeps: (): Promise<{ ytdlp: boolean; ffmpeg: boolean }> =>
       ipcRenderer.invoke('download:checkDeps'),

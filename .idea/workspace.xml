@@ -4,8 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="baa64891-4534-4ae1-9d4e-4c8e9230231c" name="Changes" comment="Fix playing deleted tracks">
+    <list default="true" id="baa64891-4534-4ae1-9d4e-4c8e9230231c" name="Changes" comment="Tune colors">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/preload/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/preload/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/src/App.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/src/App.svelte" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/src/env.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/src/env.d.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/src/lib/components/PlayerIsland.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/src/lib/components/PlayerIsland.svelte" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -70,7 +74,7 @@
       <workItem from="1772375579255" duration="1785000" />
       <workItem from="1772377631245" duration="5596000" />
       <workItem from="1772383484542" duration="15767000" />
-      <workItem from="1772436548292" duration="7222000" />
+      <workItem from="1772436548292" duration="8899000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <option name="closed" value="true" />
@@ -136,7 +140,23 @@
       <option name="project" value="LOCAL" />
       <updated>1772443476208</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Responsive player pane">
+      <option name="closed" value="true" />
+      <created>1772445169217</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1772445169217</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Tune colors">
+      <option name="closed" value="true" />
+      <created>1772445337969</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1772445337969</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -153,6 +173,8 @@
     <MESSAGE value="Fix themes" />
     <MESSAGE value="Player" />
     <MESSAGE value="Fix playing deleted tracks" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix playing deleted tracks" />
+    <MESSAGE value="Responsive player pane" />
+    <MESSAGE value="Tune colors" />
+    <option name="LAST_COMMIT_MESSAGE" value="Tune colors" />
   </component>
 </project>

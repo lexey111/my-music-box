@@ -7,6 +7,13 @@
   import { handleProgress, handleComplete, handleError } from './lib/stores/downloads'
   import PlayerIsland from './lib/components/PlayerIsland.svelte'
 
+  let isMini = false
+
+  async function toggleMiniMode(): Promise<void> {
+    isMini = !isMini
+    await window.api.player.setMiniMode(isMini)
+  }
+
   let ready = false
 
   onMount(async () => {
@@ -93,6 +100,10 @@
       </button>
     </div>
   </div>
+{:else if isMini}
+  <div class="mini-shell">
+    <PlayerIsland {isMini} onToggleMini={toggleMiniMode} />
+  </div>
 {:else}
   <div class="app-shell">
     <!-- ── Tab bar (macOS drag region) ──────────────────────────────────── -->
@@ -135,7 +146,7 @@
       {/if}
 
       {#if $activeTab === 'library'}
-        <PlayerIsland />
+        <PlayerIsland {isMini} onToggleMini={toggleMiniMode} />
       {/if}
 
       <!-- ── Status bar ──────────────────────────────────────────────────── -->
@@ -207,6 +218,16 @@
     background: var(--bg-secondary);
     padding: 1px 4px;
     border-radius: 3px;
+  }
+
+  /* ── Mini shell ─────────────────────────────────────────────────────── */
+
+  .mini-shell {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg-app);
   }
 
   /* ── App shell ──────────────────────────────────────────────────────── */

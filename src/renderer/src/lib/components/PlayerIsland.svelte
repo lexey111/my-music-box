@@ -2,9 +2,17 @@
   import { tracks } from '../stores/app'
   import { player, playAll, togglePlay, playNext, playPrev, seek, setVolume } from '../stores/player'
 
+  export let isMini = false
+  export let onToggleMini: () => void = () => {}
+
   let volume = 1
   let islandWidth = 0
-  $: isWide = islandWidth > 800
+
+  $: isWide = isMini ? islandWidth > 500 : islandWidth > 800
+
+  $: if (isMini) {
+    window.api.player.notifyLayoutChanged(isWide)
+  }
 
   function formatTime(seconds: number): string {
     if (!isFinite(seconds) || seconds < 0) return '0:00'
@@ -30,9 +38,8 @@
     : 'No track'
 </script>
 
-<div class="player-island" class:wide={isWide} bind:clientWidth={islandWidth}>
+<div class="player-island" class:wide={isWide} class:mini={isMini} bind:clientWidth={islandWidth}>
 
-  <!-- Transport buttons + Play All -->
   <div class="controls">
     <button class="btn-play-all" on:click={() => playAll($tracks)}>⇌ Play All</button>
     <div class="transport">
@@ -47,10 +54,8 @@
     </div>
   </div>
 
-  <!-- Track title — between transport and scrubber in wide mode -->
   <span class="track-label" title={trackLabel}>{trackLabel}</span>
 
-  <!-- Progress bar + time + volume -->
   <div class="scrubber-row">
     <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
     <div class="progress-bar" on:click={handleProgressClick}>
@@ -65,6 +70,10 @@
       title="Volume"
     />
   </div>
+
+  <button class="btn-mini-toggle" on:click={onToggleMini} title={isMini ? 'Expand' : 'Mini player'}>
+    {isMini ? '⊞' : '⊟'}
+  </button>
 
 </div>
 
@@ -124,7 +133,6 @@
     font-size: 14px;
   }
 
-  /* In narrow mode the label sits on the same line as controls */
   .track-label {
     flex: 1;
     min-width: 0;
@@ -135,23 +143,18 @@
     color: var(--fg);
   }
 
-  /* Narrow: controls + label share the first line via the column's implicit row */
-  .player-island:not(.wide) .controls {
-    /* Let the label (sibling) sit next to controls by wrapping them in a row */
-  }
-
-  /* Achieve "controls + label on one line" in narrow mode without an extra wrapper:
-     make the island's column behave as a two-row grid where row 1 is a flex row. */
+  /* Narrow: grid so controls + label share row 1, scrubber + toggle span row 2 */
   .player-island:not(.wide) {
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto 1fr auto;
     grid-template-rows: auto auto;
     column-gap: 10px;
     row-gap: 6px;
   }
 
-  .player-island:not(.wide) .controls   { grid-column: 1; grid-row: 1; }
-  .player-island:not(.wide) .track-label { grid-column: 2; grid-row: 1; align-self: center; }
+  .player-island:not(.wide) .controls     { grid-column: 1;    grid-row: 1; }
+  .player-island:not(.wide) .track-label  { grid-column: 2;    grid-row: 1; align-self: center; }
+  .player-island:not(.wide) .btn-mini-toggle { grid-column: 3; grid-row: 1; align-self: center; }
   .player-island:not(.wide) .scrubber-row { grid-column: 1 / -1; grid-row: 2; }
 
   /* ── Wide (single-line) ───────────────────────────────────────────────────── */
@@ -160,13 +163,37 @@
     flex-direction: row;
     align-items: center;
     padding: 0 14px;
-    gap: 12px;
+    gap: 10px;
     height: 48px;
   }
 
-  .wide .controls   { flex-shrink: 0; }
-  .wide .track-label { flex: 0 1 200px; }   /* grows up to 200px, can shrink */
+  .wide .controls    { flex-shrink: 0; }
+  .wide .track-label { flex: 0 1 200px; }
   .wide .scrubber-row { flex: 1; min-width: 0; }
+  .wide .btn-mini-toggle { flex-shrink: 0; }
+
+  /* ── Mini mode ────────────────────────────────────────────────────────────── */
+
+  .mini {
+    border-radius: 8px;
+    flex: 1;
+    height: auto;
+    padding: 6px 12px 8px;
+    -webkit-app-region: drag;
+  }
+
+  /* Every interactive child must opt out of the drag region */
+  .mini .controls,
+  .mini .btn-play-all,
+  .mini .transport,
+  .mini .transport-btn,
+  .mini .scrubber-row,
+  .mini .progress-bar,
+  .mini .volume-slider,
+  .mini .btn-mini-toggle,
+  .mini .track-label {
+    -webkit-app-region: no-drag;
+  }
 
   /* ── Scrubber row (shared) ────────────────────────────────────────────────── */
 
@@ -207,5 +234,25 @@
     flex-shrink: 0;
     accent-color: var(--accent);
     cursor: pointer;
+  }
+
+  /* ── Mini toggle button ───────────────────────────────────────────────────── */
+
+  .btn-mini-toggle {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border-radius: var(--radius);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.5;
+    transition: opacity 0.12s;
+    flex-shrink: 0;
+  }
+
+  .btn-mini-toggle:hover {
+    opacity: 1;
   }
 </style>
