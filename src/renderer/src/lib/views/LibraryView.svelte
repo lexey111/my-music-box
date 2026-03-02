@@ -245,7 +245,7 @@
     align-items: center;
     height: var(--header-height);
     padding: 0 12px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--separator);
     background: var(--bg-toolbar);
     font-size: 11px;
     font-weight: 600;
@@ -270,7 +270,7 @@
     align-items: center;
     padding: 0 12px;
     cursor: pointer;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--separator);
     transition: background 0.08s;
   }
 
