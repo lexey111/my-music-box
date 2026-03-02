@@ -8,11 +8,13 @@
   let volume = 1
   let islandWidth = 0
 
-  $: isWide = isMini ? islandWidth > 500 : islandWidth > 800
+  $: isWide = isMini ? islandWidth > 700 : islandWidth > 800
+  $: isCompact = isMini && islandWidth < 450
+  $: isUltraCompact = isMini && islandWidth < 300
+  $: isStackedVolume = isMini && islandWidth <= 250
 
-  $: if (isMini) {
-    window.api.player.notifyLayoutChanged(isWide)
-  }
+  $: miniHeight = isWide ? 56 : isStackedVolume ? 96 : isUltraCompact ? 76 : isCompact ? 60 : 88
+  $: if (isMini) window.api.player.notifyLayoutChanged(miniHeight)
 
   function formatTime(seconds: number): string {
     if (!isFinite(seconds) || seconds < 0) return '0:00'
@@ -35,10 +37,12 @@
   $: queueActive = $player.mode === 'queue'
   $: trackLabel = $player.currentTrack
     ? `${$player.currentTrack.title}${$player.currentTrack.artist ? ' – ' + $player.currentTrack.artist : ''}`
-    : 'No track'
+    : isMini
+      ? 'No track — click Play All to start'
+      : 'No track — click Play All or any track to start'
 </script>
 
-<div class="player-island" class:wide={isWide} class:mini={isMini} bind:clientWidth={islandWidth}>
+<div class="player-island" class:wide={isWide} class:compact={isCompact} class:ultra={isUltraCompact} class:stacked={isStackedVolume} class:mini={isMini} bind:clientWidth={islandWidth}>
 
   <div class="controls">
     <button class="btn-play-all" on:click={() => playAll($tracks)}>⇌ Play All</button>
@@ -168,7 +172,7 @@
   }
 
   .wide .controls    { flex-shrink: 0; }
-  .wide .track-label { flex: 0 1 200px; }
+  .wide .track-label { flex: 0 1 120px; }
   .wide .scrubber-row { flex: 1; min-width: 0; }
   .wide .btn-mini-toggle { flex-shrink: 0; }
 
@@ -182,7 +186,8 @@
     -webkit-app-region: drag;
   }
 
-  /* Every interactive child must opt out of the drag region */
+  /* Every interactive child must opt out of the drag region.
+     .track-label is intentionally omitted so it stays draggable. */
   .mini .controls,
   .mini .btn-play-all,
   .mini .transport,
@@ -190,8 +195,7 @@
   .mini .scrubber-row,
   .mini .progress-bar,
   .mini .volume-slider,
-  .mini .btn-mini-toggle,
-  .mini .track-label {
+  .mini .btn-mini-toggle {
     -webkit-app-region: no-drag;
   }
 
@@ -234,6 +238,7 @@
     flex-shrink: 0;
     accent-color: var(--accent);
     cursor: pointer;
+    margin-right: 4px; /* keep thumb away from adjacent toggle button */
   }
 
   /* ── Mini toggle button ───────────────────────────────────────────────────── */
@@ -255,4 +260,95 @@
   .btn-mini-toggle:hover {
     opacity: 1;
   }
+
+  /* ── Compact mini (<450px) ────────────────────────────────────────────────── */
+
+  .mini.compact {
+    padding: 5px 8px 8px;
+    row-gap: 5px;
+    column-gap: 6px;
+  }
+
+  .mini.compact .btn-play-all {
+    font-size: 10px;
+    padding: 2px 6px;
+    height: 20px;
+    line-height: 1;
+  }
+
+  .mini.compact .transport-btn {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+  }
+
+  .mini.compact .play-pause {
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
+  }
+
+  .mini.compact .track-label {
+    font-size: 11px;
+  }
+
+  .mini.compact .time {
+    font-size: 9px;
+  }
+
+  .mini.compact .volume-slider {
+    width: 50px;
+    -webkit-appearance: none;
+    background: transparent;
+  }
+
+  .mini.compact .volume-slider::-webkit-slider-runnable-track {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+  }
+
+  .mini.compact .volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    margin-top: -3.5px;
+  }
+
+  .mini.compact .btn-mini-toggle {
+    width: 20px;
+    height: 20px;
+    font-size: 11px;
+  }
+
+  /* ── Ultra-compact mini (< 350px): 3-row layout ─────────────────────────── */
+
+  .mini.ultra:not(.wide) {
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: auto auto auto;
+    column-gap: 6px;
+    row-gap: 6px;
+  }
+
+  .mini.ultra:not(.wide) .controls        { grid-column: 1; grid-row: 1; }
+  .mini.ultra:not(.wide) .btn-mini-toggle { grid-column: 3; grid-row: 1; align-self: center; }
+  .mini.ultra:not(.wide) .track-label     { grid-column: 1 / -1; grid-row: 2; }
+  .mini.ultra:not(.wide) .scrubber-row    { grid-column: 1 / -1; grid-row: 3; }
+
+  /* ── Stacked mini (≤ 300px): volume wraps to its own 4th line ──────────── */
+
+  .mini.stacked .scrubber-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    row-gap: 7px;
+    column-gap: 10px;
+  }
+
+  .mini.stacked .progress-bar  { grid-column: 1; grid-row: 1; align-self: center; }
+  .mini.stacked .time          { grid-column: 2; grid-row: 1; align-self: center; }
+  .mini.stacked .volume-slider { grid-column: 1; grid-row: 2; width: 100%; margin-right: 0; }
 </style>

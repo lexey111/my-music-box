@@ -4,11 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="baa64891-4534-4ae1-9d4e-4c8e9230231c" name="Changes" comment="Tune colors">
+    <list default="true" id="baa64891-4534-4ae1-9d4e-4c8e9230231c" name="Changes" comment="Mini player">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/index.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/preload/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/preload/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/src/App.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/src/App.svelte" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/src/env.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/src/env.d.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/src/lib/components/PlayerIsland.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/src/lib/components/PlayerIsland.svelte" afterDir="false" />
     </list>
@@ -74,7 +73,8 @@
       <workItem from="1772375579255" duration="1785000" />
       <workItem from="1772377631245" duration="5596000" />
       <workItem from="1772383484542" duration="15767000" />
-      <workItem from="1772436548292" duration="8899000" />
+      <workItem from="1772436548292" duration="10433000" />
+      <workItem from="1772450226902" duration="2668000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <option name="closed" value="true" />
@@ -156,7 +156,15 @@
       <option name="project" value="LOCAL" />
       <updated>1772445337969</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="Mini player">
+      <option name="closed" value="true" />
+      <created>1772447016103</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1772447016103</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -175,6 +183,7 @@
     <MESSAGE value="Fix playing deleted tracks" />
     <MESSAGE value="Responsive player pane" />
     <MESSAGE value="Tune colors" />
-    <option name="LAST_COMMIT_MESSAGE" value="Tune colors" />
+    <MESSAGE value="Mini player" />
+    <option name="LAST_COMMIT_MESSAGE" value="Mini player" />
   </component>
 </project>

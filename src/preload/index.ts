@@ -44,8 +44,8 @@ const api = {
   player: {
     setMiniMode: (mini: boolean): Promise<void> =>
       ipcRenderer.invoke('player:setMiniMode', mini),
-    notifyLayoutChanged: (isWide: boolean): Promise<void> =>
-      ipcRenderer.invoke('player:notifyLayoutChanged', isWide)
+    notifyLayoutChanged: (height: number): Promise<void> =>
+      ipcRenderer.invoke('player:notifyLayoutChanged', height)
   },
 
   download: {

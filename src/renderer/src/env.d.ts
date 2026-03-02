@@ -95,7 +95,7 @@ declare global {
       }
       player: {
         setMiniMode: (mini: boolean) => Promise<void>
-        notifyLayoutChanged: (isWide: boolean) => Promise<void>
+        notifyLayoutChanged: (height: number) => Promise<void>
       }
     }
   }

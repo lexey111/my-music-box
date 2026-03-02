@@ -17,6 +17,7 @@ app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
 let mainWindow: BrowserWindow | null = null
 let library: LibraryService | null = null
 let prevBounds: Rectangle | null = null
+let isMiniMode = false
 
 function createWindow(backgroundColor = '#e8e8e8'): void {
   mainWindow = new BrowserWindow({
@@ -78,11 +79,12 @@ app.whenReady().then(() => {
 
   ipcMain.handle('player:setMiniMode', (_, mini: boolean) => {
     if (!mainWindow) return
+    isMiniMode = mini
     if (mini) {
       prevBounds = mainWindow.getBounds()
       mainWindow.setResizable(true)
-      mainWindow.setMinimumSize(400, 88)
-      mainWindow.setMaximumSize(800, 88)
+      mainWindow.setMinimumSize(190, 88)
+      mainWindow.setMaximumSize(1000, 88)
       mainWindow.setSize(500, 88, true)
       mainWindow.setAlwaysOnTop(true, 'floating')
       if (process.platform === 'darwin') mainWindow.setWindowButtonVisibility(false)
@@ -90,20 +92,19 @@ app.whenReady().then(() => {
       mainWindow.setAlwaysOnTop(false)
       if (process.platform === 'darwin') mainWindow.setWindowButtonVisibility(true)
       mainWindow.setMinimumSize(800, 560)
-      mainWindow.setMaximumSize(0, 0)
+      mainWindow.setMaximumSize(9999, 9999)
       mainWindow.setResizable(true)
       if (prevBounds) mainWindow.setBounds(prevBounds, true)
       else mainWindow.setSize(1200, 780, true)
     }
   })
 
-  ipcMain.handle('player:notifyLayoutChanged', (_, isWide: boolean) => {
-    if (!mainWindow) return
-    const h = isWide ? 56 : 88
+  ipcMain.handle('player:notifyLayoutChanged', (_, height: number) => {
+    if (!mainWindow || !isMiniMode) return
     const { width } = mainWindow.getBounds()
-    mainWindow.setMinimumSize(400, h)
-    mainWindow.setMaximumSize(800, h)
-    mainWindow.setSize(width, h, true)
+    mainWindow.setMinimumSize(190, height)
+    mainWindow.setMaximumSize(1000, height)
+    mainWindow.setSize(width, height, true)
   })
 
   const savedTheme = settings.get('theme') ?? 'system'
