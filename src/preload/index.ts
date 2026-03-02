@@ -3,9 +3,10 @@ import { electronAPI } from '@electron-toolkit/preload'
 import type { AppSettings } from '../main/services/SettingsService'
 import type { Track, SyncResult } from '../main/services/LibraryService'
 import type { SearchResult, JobStatus } from '../main/services/DownloadService'
+import type { ImportFileInfo } from '../main/services/ImportService'
 
 // Re-export types so the renderer can import them via the env.d.ts declaration
-export type { AppSettings, Track, SyncResult, SearchResult, JobStatus }
+export type { AppSettings, Track, SyncResult, SearchResult, JobStatus, ImportFileInfo }
 
 const api = {
   settings: {
@@ -78,6 +79,47 @@ const api = {
       ipcRenderer.on('download:error', listener)
       return () => ipcRenderer.off('download:error', listener)
     }
+  },
+
+  import: {
+    selectFiles: (): Promise<ImportFileInfo[]> =>
+      ipcRenderer.invoke('import:selectFiles'),
+
+    selectFolder: (): Promise<ImportFileInfo[]> =>
+      ipcRenderer.invoke('import:selectFolder'),
+
+    start: (jobId: string, files: ImportFileInfo[]): Promise<void> =>
+      ipcRenderer.invoke('import:start', jobId, files),
+
+    cancel: (jobId: string): Promise<void> =>
+      ipcRenderer.invoke('import:cancel', jobId),
+
+    onProgress: (cb: (payload: { jobId: string; fileIndex: number; total: number; filename: string }) => void): (() => void) => {
+      const listener = (_: Electron.IpcRendererEvent, payload: { jobId: string; fileIndex: number; total: number; filename: string }): void => cb(payload)
+      ipcRenderer.on('import:progress', listener)
+      return () => ipcRenderer.off('import:progress', listener)
+    },
+
+    onFileComplete: (cb: (payload: { jobId: string; fileIndex: number; track: Track }) => void): (() => void) => {
+      const listener = (_: Electron.IpcRendererEvent, payload: { jobId: string; fileIndex: number; track: Track }): void => cb(payload)
+      ipcRenderer.on('import:fileComplete', listener)
+      return () => ipcRenderer.off('import:fileComplete', listener)
+    },
+
+    onFileError: (cb: (payload: { jobId: string; fileIndex: number; error: string }) => void): (() => void) => {
+      const listener = (_: Electron.IpcRendererEvent, payload: { jobId: string; fileIndex: number; error: string }): void => cb(payload)
+      ipcRenderer.on('import:fileError', listener)
+      return () => ipcRenderer.off('import:fileError', listener)
+    },
+
+    onDone: (cb: (payload: { jobId: string; imported: number; errors: number }) => void): (() => void) => {
+      const listener = (_: Electron.IpcRendererEvent, payload: { jobId: string; imported: number; errors: number }): void => cb(payload)
+      ipcRenderer.on('import:done', listener)
+      return () => ipcRenderer.off('import:done', listener)
+    },
+
+    checkDuplicates: (files: ImportFileInfo[]): Promise<number[]> =>
+      ipcRenderer.invoke('import:checkDuplicates', files)
   }
 }
 

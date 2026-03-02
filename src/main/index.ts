@@ -5,6 +5,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { LibraryService } from './services/LibraryService'
 import { SettingsService } from './services/SettingsService'
 import { DownloadService } from './services/DownloadService'
+import { ImportService } from './services/ImportService'
 import { registerIpcHandlers } from './ipc/handlers'
 
 // Allow audio playback without a synchronous user gesture.
@@ -109,6 +110,7 @@ app.whenReady().then(() => {
 
   const settings = new SettingsService(userDataPath)
   const downloadService = new DownloadService()
+  const importService = new ImportService()
 
   // If a library path was previously saved, open it straight away
   const savedPath = settings.get('libraryPath')
@@ -120,7 +122,8 @@ app.whenReady().then(() => {
     settings,
     getLibrary: () => library,
     setLibrary: (s) => { library = s },
-    downloadService
+    downloadService,
+    importService
   })
 
   const ANIM_MS = 320 // macOS resize animation duration

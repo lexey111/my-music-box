@@ -50,6 +50,14 @@ interface SearchResult {
 
 type JobStatus = 'downloading' | 'processing' | 'done' | 'error' | 'cancelled'
 
+interface ImportFileInfo {
+  path: string
+  title: string
+  artist: string | null
+  duration: number | null
+  size: number
+}
+
 interface DownloadProgressPayload {
   jobId: string
   progress: number
@@ -96,6 +104,17 @@ declare global {
       player: {
         setMiniMode: (mini: boolean) => Promise<void>
         notifyLayoutChanged: (height: number) => Promise<void>
+      }
+      import: {
+        selectFiles: () => Promise<ImportFileInfo[]>
+        selectFolder: () => Promise<ImportFileInfo[]>
+        start: (jobId: string, files: ImportFileInfo[]) => Promise<void>
+        cancel: (jobId: string) => Promise<void>
+        onProgress: (cb: (payload: { jobId: string; fileIndex: number; total: number; filename: string }) => void) => () => void
+        onFileComplete: (cb: (payload: { jobId: string; fileIndex: number; track: Track }) => void) => () => void
+        onFileError: (cb: (payload: { jobId: string; fileIndex: number; error: string }) => void) => () => void
+        onDone: (cb: (payload: { jobId: string; imported: number; errors: number }) => void) => () => void
+        checkDuplicates: (files: ImportFileInfo[]) => Promise<number[]>
       }
     }
   }

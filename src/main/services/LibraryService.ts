@@ -182,6 +182,17 @@ export class LibraryService {
     return this.getTrack(id)!
   }
 
+  findByMeta(title: string, artist: string | null, duration: number | null): boolean {
+    const row = this.db.prepare(`
+      SELECT id FROM tracks
+      WHERE LOWER(title) = LOWER(?)
+        AND LOWER(COALESCE(artist,'')) = LOWER(COALESCE(?,''))
+        AND ABS(COALESCE(duration,0) - COALESCE(?,0)) <= 3
+      LIMIT 1
+    `).get(title, artist, duration)
+    return !!row
+  }
+
   private md5(filePath: string): string {
     const hash = createHash('md5')
     hash.update(readFileSync(filePath))

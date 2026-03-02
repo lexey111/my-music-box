@@ -3,6 +3,14 @@ import { notifyTracksDeleted } from './player'
 
 // ── Core state ────────────────────────────────────────────────────────────────
 
+// ── Import tab state (persisted across tab switches) ──────────────────────────
+
+export const importFiles = writable<ImportFileInfo[]>([])
+export const importSelected = writable<Set<number>>(new Set())
+export const importDuplicates = writable<Set<number>>(new Set())
+
+// ── Core state ────────────────────────────────────────────────────────────────
+
 export const settings = writable<AppSettings>({
   libraryPath: null,
   bitrate: 256,
@@ -15,7 +23,7 @@ export const tracks = writable<Track[]>([])
 export const search = writable('')
 export const loading = writable(false)
 export const selectedIds = writable<Set<number>>(new Set())
-export const activeTab = writable<'library' | 'addMusic' | 'settings'>('library')
+export const activeTab = writable<'library' | 'addMusic' | 'importMusic' | 'settings'>('library')
 
 export const libraryPath = derived(settings, ($s) => $s.libraryPath)
 

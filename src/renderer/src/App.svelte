@@ -2,6 +2,7 @@
     import {onMount} from 'svelte'
     import LibraryView from './lib/views/LibraryView.svelte'
     import AddMusicView from './lib/views/AddMusicView.svelte'
+    import ImportMusicView from './lib/views/ImportMusicView.svelte'
     import SettingsView from './lib/views/SettingsView.svelte'
     import {init, libraryPath, selectLibraryPath, settings, loadTracks, tracks, activeTab} from './lib/stores/app'
     import {handleProgress, handleComplete, handleError, activeJobs} from './lib/stores/downloads'
@@ -125,7 +126,13 @@
                     class="tab"
                     class:active={$activeTab === 'addMusic'}
                     on:click={() => ($activeTab = 'addMusic')}
-            >Add Music
+            >Find Music
+            </button>
+            <button
+                    class="tab"
+                    class:active={$activeTab === 'importMusic'}
+                    on:click={() => ($activeTab = 'importMusic')}
+            >Import Music
             </button>
             <button
                     class="gear"
@@ -145,6 +152,10 @@
         <div class="content-area">
             {#if $activeTab === 'addMusic'}
                 <AddMusicView/>
+            {:else if $activeTab === 'importMusic'}
+                <div class="content-island">
+                    <ImportMusicView/>
+                </div>
             {:else}
                 <div class="content-island">
                     {#if $activeTab === 'library'}
@@ -279,6 +290,8 @@
 
     .content-island {
         flex: 1;
+        display: flex;
+        flex-direction: column;
         overflow: hidden;
         border-radius: 10px;
         background: var(--bg);

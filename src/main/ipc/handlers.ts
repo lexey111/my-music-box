@@ -4,15 +4,17 @@ import { readFileSync } from 'fs'
 import { LibraryService } from '../services/LibraryService'
 import { SettingsService } from '../services/SettingsService'
 import { DownloadService } from '../services/DownloadService'
+import { ImportService } from '../services/ImportService'
 
 interface Deps {
   settings: SettingsService
   getLibrary: () => LibraryService | null
   setLibrary: (s: LibraryService | null) => void
   downloadService: DownloadService
+  importService: ImportService
 }
 
-export function registerIpcHandlers({ settings, getLibrary, setLibrary, downloadService }: Deps): void {
+export function registerIpcHandlers({ settings, getLibrary, setLibrary, downloadService, importService }: Deps): void {
   // ── Settings ─────────────────────────────────────────────────────────────
 
   ipcMain.handle('settings:getAll', () => settings.getAll())
@@ -120,4 +122,45 @@ export function registerIpcHandlers({ settings, getLibrary, setLibrary, download
   })
 
   ipcMain.handle('download:cancel', (_, jobId: string) => downloadService.cancelDownload(jobId))
+
+  // ── Import ────────────────────────────────────────────────────────────────
+
+  ipcMain.handle('import:selectFiles', async () => {
+    const result = await dialog.showOpenDialog({
+      properties: ['openFile', 'multiSelections'],
+      filters: [{ name: 'Audio', extensions: ['mp3', 'm4a', 'aac', 'flac', 'wav', 'ogg', 'opus', 'wma', 'aiff', 'aif'] }]
+    })
+    if (result.canceled) return []
+    return importService.scanFiles(result.filePaths)
+  })
+
+  ipcMain.handle('import:selectFolder', async () => {
+    const result = await dialog.showOpenDialog({ properties: ['openDirectory'] })
+    if (result.canceled) return []
+    return importService.scanFolder(result.filePaths[0])
+  })
+
+  ipcMain.handle('import:start', (event, jobId: string, files: unknown[]) => {
+    const library = getLibrary()
+    if (!library) throw new Error('No library selected')
+    const s = settings.getAll()
+    importService.startImport(
+      jobId,
+      files as Parameters<ImportService['startImport']>[1],
+      { bitrate: s.bitrate, normalization: s.normalization, normalizationLufs: s.normalizationLufs },
+      library,
+      (p) => { if (!event.sender.isDestroyed()) event.sender.send('import:progress', p) },
+      (p) => { if (!event.sender.isDestroyed()) event.sender.send('import:fileComplete', p) },
+      (p) => { if (!event.sender.isDestroyed()) event.sender.send('import:fileError', p) },
+      (p) => { if (!event.sender.isDestroyed()) event.sender.send('import:done', p) }
+    )
+  })
+
+  ipcMain.handle('import:cancel', (_, jobId: string) => importService.cancelImport(jobId))
+
+  ipcMain.handle('import:checkDuplicates', (_, files: import('../services/ImportService').ImportFileInfo[]) => {
+    const library = getLibrary()
+    if (!library) return []
+    return importService.checkLibraryDuplicates(files, library)
+  })
 }
