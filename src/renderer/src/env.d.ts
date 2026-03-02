@@ -14,6 +14,7 @@ interface AppSettings {
   cookiesBrowser: CookiesBrowser
   crossfade: boolean
   crossfadeDuration: number
+  searchResultCount: number
 }
 
 interface Track {
@@ -81,6 +82,7 @@ declare global {
         deleteTrack: (id: number) => Promise<boolean>
         deleteTracks: (ids: number[]) => Promise<number>
         sync: () => Promise<SyncResult>
+        readAudioFile: (id: number) => Promise<ArrayBuffer | null>
       }
       download: {
         checkDeps: () => Promise<{ ytdlp: boolean; ffmpeg: boolean }>

@@ -1,5 +1,6 @@
 import { ipcMain, dialog, app, nativeTheme } from 'electron'
 import { randomUUID } from 'crypto'
+import { readFileSync } from 'fs'
 import { LibraryService } from '../services/LibraryService'
 import { SettingsService } from '../services/SettingsService'
 import { DownloadService } from '../services/DownloadService'
@@ -67,12 +68,26 @@ export function registerIpcHandlers({ settings, getLibrary, setLibrary, download
     return getLibrary()?.sync() ?? { markedMissing: 0, restored: 0, totalTracks: 0 }
   })
 
+  ipcMain.handle('library:readAudioFile', (_, id: number): Buffer | null => {
+    const library = getLibrary()
+    if (!library) { console.error('[readAudioFile] no library'); return null }
+    const filePath = library.filePath(id)
+    try {
+      const buf = readFileSync(filePath)
+      console.log(`[readAudioFile] id=${id} path=${filePath} size=${buf.byteLength}`)
+      return buf
+    } catch (e) {
+      console.error(`[readAudioFile] failed to read id=${id} path=${filePath}`, e)
+      return null
+    }
+  })
+
   // ── Download ──────────────────────────────────────────────────────────────
 
   ipcMain.handle('download:checkDeps', () => downloadService.checkDependencies())
 
   ipcMain.handle('download:search', (_, query: string) =>
-    downloadService.search(query, settings.get('cookiesBrowser'))
+    downloadService.search(query, settings.get('cookiesBrowser'), settings.get('searchResultCount'))
   )
 
   ipcMain.handle('download:start', (event, url: string, title: string, artist: string | null, duration: number | null) => {

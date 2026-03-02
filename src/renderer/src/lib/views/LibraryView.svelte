@@ -13,6 +13,7 @@
     activeTab
   } from '../stores/app'
   import { redownloadTrack } from '../stores/downloads'
+  import { player, playTrack } from '../stores/player'
 
   function handleRedownload(track: Track): void {
     redownloadTrack(track)
@@ -179,6 +180,13 @@
                 <button class="btn-redownload" on:click|stopPropagation={() => handleRedownload(track)}>
                   Download again
                 </button>
+              {:else}
+                <button
+                  class="btn-play"
+                  class:active={$player.currentTrack?.id === track.id}
+                  on:click|stopPropagation={() => playTrack(track, $tracks)}
+                  title="Play"
+                >▶</button>
               {/if}
             </span>
           </div>
@@ -306,6 +314,31 @@
 
   .dot.dot-missing {
     background: var(--error);
+  }
+
+  /* ── Play button ─────────────────────────────────────────────────────────── */
+
+  .btn-play {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    font-size: 10px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.12s;
+  }
+
+  .track-row:hover .btn-play {
+    opacity: 0.55;
+  }
+
+  .btn-play:hover,
+  .btn-play.active {
+    opacity: 1;
+    color: var(--accent);
   }
 
   /* ── Empty state ────────────────────────────────────────────────────────── */

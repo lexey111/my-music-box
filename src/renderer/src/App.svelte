@@ -5,6 +5,7 @@
   import SettingsView from './lib/views/SettingsView.svelte'
   import { init, libraryPath, selectLibraryPath, settings, loadTracks, tracks, activeTab } from './lib/stores/app'
   import { handleProgress, handleComplete, handleError } from './lib/stores/downloads'
+  import PlayerIsland from './lib/components/PlayerIsland.svelte'
 
   let ready = false
 
@@ -131,6 +132,10 @@
             <SettingsView />
           {/if}
         </div>
+      {/if}
+
+      {#if $activeTab === 'library'}
+        <PlayerIsland />
       {/if}
 
       <!-- ── Status bar ──────────────────────────────────────────────────── -->

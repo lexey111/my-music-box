@@ -47,6 +47,23 @@
       </div>
     </section>
 
+    <!-- ── Search ────────────────────────────────────────────────────── -->
+    <section>
+      <h2>Search</h2>
+      <div class="row">
+        <span class="label">Results</span>
+        <input
+          type="range"
+          min="3"
+          max="15"
+          step="1"
+          value={$settings.searchResultCount ?? 5}
+          on:input={(e) => setSetting('searchResultCount', Number((e.target as HTMLInputElement).value))}
+        />
+        <span class="range-value">{$settings.searchResultCount ?? 5}</span>
+      </div>
+    </section>
+
     <!-- ── Playback ───────────────────────────────────────────────────── -->
     <section>
       <h2>Playback</h2>

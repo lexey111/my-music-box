@@ -99,13 +99,13 @@ export class DownloadService {
     }
   }
 
-  async search(query: string, cookiesBrowser: string): Promise<SearchResult[]> {
+  async search(query: string, cookiesBrowser: string, count: number): Promise<SearchResult[]> {
     const ytdlp = findBinary('yt-dlp')
     if (!ytdlp) throw new Error('yt-dlp not found')
 
     return new Promise((resolve, reject) => {
       const args = [
-        `ytsearch5:${query}`,
+        `ytsearch${count}:${query}`,
         '--dump-json',
         '--flat-playlist',
         '--no-warnings',
@@ -148,7 +148,7 @@ export class DownloadService {
             // skip malformed lines
           }
         }
-        resolve(results.slice(0, 5))
+        resolve(results.slice(0, count))
       })
 
       proc.on('error', reject)

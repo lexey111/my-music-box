@@ -30,7 +30,10 @@ const api = {
       ipcRenderer.invoke('library:deleteTracks', ids),
 
     sync: (): Promise<SyncResult> =>
-      ipcRenderer.invoke('library:sync')
+      ipcRenderer.invoke('library:sync'),
+
+    readAudioFile: (id: number): Promise<ArrayBuffer | null> =>
+      ipcRenderer.invoke('library:readAudioFile', id)
   },
 
   app: {

@@ -6,6 +6,13 @@ import { SettingsService } from './services/SettingsService'
 import { DownloadService } from './services/DownloadService'
 import { registerIpcHandlers } from './ipc/handlers'
 
+// Allow audio playback without a synchronous user gesture.
+// After an `await` (e.g. the IPC call that reads the audio file) the user-
+// gesture token is lost and Chromium silently blocks audio.play(). This
+// switch re-enables autoplay for the whole app, which is correct behaviour
+// for a music player.
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
+
 let mainWindow: BrowserWindow | null = null
 let library: LibraryService | null = null
 
