@@ -10,9 +10,13 @@
   let isMini = false
 
   async function toggleMiniMode(): Promise<void> {
-    const newMini = !isMini
-    await window.api.player.setMiniMode(newMini)
-    isMini = newMini
+    if (!isMini) {
+      isMini = true                             // show mini UI during entry animation
+      await window.api.player.setMiniMode(true)
+    } else {
+      await window.api.player.setMiniMode(false) // keep mini UI during exit animation
+      isMini = false
+    }
   }
 
   let ready = false

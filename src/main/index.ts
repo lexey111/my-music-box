@@ -23,6 +23,9 @@ interface WindowState {
 let mainWindow: BrowserWindow | null = null
 let library: LibraryService | null = null
 let isMiniMode = false
+let isMiniTransitioning = false
+let pendingTransitionHeight: number | null = null
+let transitionTimer: ReturnType<typeof setTimeout> | null = null
 let windowState: WindowState = {}
 let windowStateFilePath = ''
 
@@ -120,9 +123,12 @@ app.whenReady().then(() => {
     downloadService
   })
 
+  const ANIM_MS = 320 // macOS resize animation duration
+
   ipcMain.handle('player:setMiniMode', (_, mini: boolean) => {
     if (!mainWindow) return
     isMiniMode = mini
+    clearTimeout(transitionTimer!)
     if (mini) {
       const saved = windowState.miniBounds
       const width = Math.min(1000, Math.max(190, saved?.width ?? 500))
@@ -132,21 +138,39 @@ app.whenReady().then(() => {
       mainWindow.setMaximumSize(1000, height)
       mainWindow.setAlwaysOnTop(true, 'floating')
       if (process.platform === 'darwin') mainWindow.setWindowButtonVisibility(false)
-      if (saved) mainWindow.setBounds({ x: saved.x, y: saved.y, width, height }, false)
-      else mainWindow.setSize(width, height, false)
+      if (saved) mainWindow.setBounds({ x: saved.x, y: saved.y, width, height }, true)
+      else mainWindow.setSize(width, height, true)
+      // Suppress notifyLayoutChanged during animation, apply buffered height after
+      isMiniTransitioning = true
+      pendingTransitionHeight = null
+      transitionTimer = setTimeout(() => {
+        isMiniTransitioning = false
+        if (pendingTransitionHeight !== null && mainWindow && isMiniMode) {
+          const { width: w } = mainWindow.getBounds()
+          mainWindow.setMinimumSize(190, pendingTransitionHeight)
+          mainWindow.setMaximumSize(1000, pendingTransitionHeight)
+          mainWindow.setSize(w, pendingTransitionHeight, false)
+          pendingTransitionHeight = null
+        }
+      }, ANIM_MS)
     } else {
+      isMiniTransitioning = false
       mainWindow.setAlwaysOnTop(false)
       if (process.platform === 'darwin') mainWindow.setWindowButtonVisibility(true)
       mainWindow.setMinimumSize(800, 560)
       mainWindow.setMaximumSize(9999, 9999)
       mainWindow.setResizable(true)
-      if (windowState.mainBounds) mainWindow.setBounds(windowState.mainBounds, false)
-      else mainWindow.setSize(1200, 780, false)
+      if (windowState.mainBounds) mainWindow.setBounds(windowState.mainBounds, true)
+      else mainWindow.setSize(1200, 780, true)
     }
   })
 
   ipcMain.handle('player:notifyLayoutChanged', (_, height: number) => {
     if (!mainWindow || !isMiniMode) return
+    if (isMiniTransitioning) {
+      pendingTransitionHeight = height  // buffer — apply after animation
+      return
+    }
     const { width } = mainWindow.getBounds()
     mainWindow.setMinimumSize(190, height)
     mainWindow.setMaximumSize(1000, height)
