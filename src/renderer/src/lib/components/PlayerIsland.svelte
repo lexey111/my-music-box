@@ -14,7 +14,7 @@
   $: isStackedVolume = isMini && islandWidth <= 250
 
   $: miniHeight = isWide ? 56 : isStackedVolume ? 96 : isUltraCompact ? 76 : isCompact ? 60 : 88
-  $: if (isMini) window.api.player.notifyLayoutChanged(miniHeight)
+  $: if (isMini && islandWidth > 0) window.api.player.notifyLayoutChanged(miniHeight)
 
   function formatTime(seconds: number): string {
     if (!isFinite(seconds) || seconds < 0) return '0:00'

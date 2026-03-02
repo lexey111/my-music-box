@@ -10,8 +10,9 @@
   let isMini = false
 
   async function toggleMiniMode(): Promise<void> {
-    isMini = !isMini
-    await window.api.player.setMiniMode(isMini)
+    const newMini = !isMini
+    await window.api.player.setMiniMode(newMini)
+    isMini = newMini
   }
 
   let ready = false
