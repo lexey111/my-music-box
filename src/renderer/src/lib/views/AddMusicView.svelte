@@ -133,80 +133,72 @@
       </label>
     </div>
 
-    <div class="search-body">
-      <!-- ── Dependency error ──────────────────────────────────────────── -->
-      {#if $deps && (!$deps.ytdlp || !$deps.ffmpeg)}
-        <div class="banner banner-error">
-          Missing:
-          {#if !$deps.ytdlp}<strong>yt-dlp</strong>{/if}
-          {#if !$deps.ytdlp && !$deps.ffmpeg}, {/if}
-          {#if !$deps.ffmpeg}<strong>ffmpeg</strong>{/if}
-          — install with: <code>brew install {!$deps.ytdlp ? 'yt-dlp ' : ''}{!$deps.ffmpeg ? 'ffmpeg' : ''}</code>
-        </div>
-      {/if}
+    <!-- ── Dependency error ───────────────────────────────────────────────── -->
+    {#if $deps && (!$deps.ytdlp || !$deps.ffmpeg)}
+      <div class="banner banner-error">
+        Missing:
+        {#if !$deps.ytdlp}<strong>yt-dlp</strong>{/if}
+        {#if !$deps.ytdlp && !$deps.ffmpeg}, {/if}
+        {#if !$deps.ffmpeg}<strong>ffmpeg</strong>{/if}
+        — install with: <code>brew install {!$deps.ytdlp ? 'yt-dlp ' : ''}{!$deps.ffmpeg ? 'ffmpeg' : ''}</code>
+      </div>
+    {/if}
 
-      <!-- ── Search error ──────────────────────────────────────────────── -->
-      {#if $searchError}
-        <div class="banner banner-error">{$searchError}</div>
-      {/if}
+    <!-- ── Search error ────────────────────────────────────────────────────── -->
+    {#if $searchError}
+      <div class="banner banner-error">{$searchError}</div>
+    {/if}
 
-      <!-- ── Search results ────────────────────────────────────────────── -->
-      {#if $searchResults.length > 0}
-        <div class="results-section">
-          <h2>Results for "{lastQuery}"</h2>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th class="col-n">#</th>
-                <th class="col-title">Title</th>
-                <th class="col-channel">Channel</th>
-                <th class="col-dur">Duration</th>
-                <th class="col-actions"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {#each $searchResults as result, i (result.id)}
-                {@const _url = result.webpage_url || result.url}
-                {@const status = libraryUrls.has(_url) ? 'library' : activeUrls.has(_url) ? 'downloading' : 'available'}
-                <tr class:row-in-library={status === 'library'} class:row-downloading={status === 'downloading'}>
-                  <td class="col-n muted">{i + 1}</td>
-                  <td class="col-title">
-                    <span class="title-text" title={result.title}>{result.title}</span>
-                  </td>
-                  <td class="col-channel muted" title={result.uploader ?? ''}>{result.uploader ?? '—'}</td>
-                  <td class="col-dur muted tabular">{formatDuration(result.duration)}</td>
-                  <td class="col-actions">
-                    <!-- svelte-ignore a11y-invalid-attribute -->
-                    <a class="preview-link" href="#" on:click|preventDefault={() => window.open(result.webpage_url)} title="Open in browser">
-                      <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M5 2H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V8" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
-                        <path d="M8 1h4v4" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M12 1L6.5 6.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
-                      </svg>
-                    </a>
-                    <button class:primary={status === 'available'} on:click={() => startDownload(result)} disabled={status !== 'available'}>
-                      {#if status === 'downloading'}<Spinner />{/if}
-                      {status === 'library' ? 'In Library' : status === 'downloading' ? 'Downloading…' : 'Download'}
-                    </button>
-                  </td>
-                </tr>
-              {/each}
-            </tbody>
-          </table>
-        </div>
-      {/if}
+    <!-- ── Search results ─────────────────────────────────────────────────── -->
+    {#if $searchResults.length > 0}
+      <div class="results-label">Results for "{lastQuery}"</div>
+      <div class="header-row">
+        <span class="col-n">#</span>
+        <span class="col-title">Title</span>
+        <span class="col-channel">Channel</span>
+        <span class="col-dur">Duration</span>
+        <span class="col-actions"></span>
+      </div>
+      <div class="results-list">
+        {#each $searchResults as result, i (result.id)}
+          {@const _url = result.webpage_url || result.url}
+          {@const status = libraryUrls.has(_url) ? 'library' : activeUrls.has(_url) ? 'downloading' : 'available'}
+          <div class="result-row" class:row-in-library={status === 'library'} class:row-downloading={status === 'downloading'}>
+            <span class="col-n">{i + 1}</span>
+            <span class="col-title">
+              <span class="title-text" title={result.title}>{result.title}</span>
+            </span>
+            <span class="col-channel" title={result.uploader ?? ''}>{result.uploader ?? '—'}</span>
+            <span class="col-dur">{formatDuration(result.duration)}</span>
+            <span class="col-actions">
+              <!-- svelte-ignore a11y-invalid-attribute -->
+              <a class="preview-link" href="#" on:click|preventDefault={() => window.open(result.webpage_url)} title="Open in browser">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 2H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V8" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
+                  <path d="M8 1h4v4" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 1L6.5 6.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
+                </svg>
+              </a>
+              <button class:primary={status === 'available'} on:click={() => startDownload(result)} disabled={status !== 'available'}>
+                {#if status === 'downloading'}<Spinner />{/if}
+                {status === 'library' ? 'In Library' : status === 'downloading' ? 'Downloading…' : 'Download'}
+              </button>
+            </span>
+          </div>
+        {/each}
+      </div>
+    {/if}
 
-      <!-- ── Empty state ────────────────────────────────────────────────── -->
-      {#if !$searchError && $searchResults.length === 0}
-        <div class="empty">
-          {#if $searching}
-            Searching for "{query}"…
-          {:else}
-            Search YouTube to find music to add to your library.
-          {/if}
-        </div>
-      {/if}
-    </div>
+    <!-- ── Empty state ─────────────────────────────────────────────────────── -->
+    {#if !$searchError && $searchResults.length === 0}
+      <div class="empty">
+        {#if $searching}
+          Searching for "{query}"…
+        {:else}
+          Search YouTube to find music to add to your library.
+        {/if}
+      </div>
+    {/if}
   </div>
 
   <!-- ── Bottom island: download queue (slides in/out) ─────────────────── -->
@@ -370,24 +362,83 @@
     font-size: 11px;
   }
 
-  /* ── Search body (scrollable) ────────────────────────────────────────── */
+  /* ── Results label (outside scroll) ─────────────────────────────────── */
 
-  .search-body {
+  .results-label {
+    padding: 10px 16px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--fg-muted);
+    background: var(--bg-toolbar);
+    flex-shrink: 0;
+  }
+
+  /* ── Column header row ───────────────────────────────────────────────── */
+
+  .header-row {
+    display: flex;
+    align-items: center;
+    height: var(--header-height);
+    padding: 0 12px;
+    border-bottom: 1px solid var(--separator);
+    background: var(--bg-toolbar);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--fg-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    user-select: none;
+    flex-shrink: 0;
+  }
+
+  /* ── Scrollable results container ────────────────────────────────────── */
+
+  .results-list {
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
-    display: flex;
-    flex-direction: column;
+    overflow-x: hidden;
   }
 
-  /* ── Results section ─────────────────────────────────────────────────── */
+  /* ── Individual result row ───────────────────────────────────────────── */
 
-  .results-section {
+  .result-row {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 12px;
+    border-bottom: 1px solid var(--separator);
+    font-size: 13px;
   }
 
-  .results-section h2 {
-    padding: 22px 16px 22px;
+  .result-row:hover { background: var(--bg-hover); }
+  .result-row.row-in-library { font-weight: 600; }
+  .result-row.row-downloading { color: var(--fg-muted); }
+
+  /* ── Flex column widths (result rows + header) ───────────────────────── */
+
+  .result-row .col-n,
+  .header-row .col-n      { width: 24px; flex-shrink: 0; text-align: center; }
+
+  .result-row .col-title,
+  .header-row .col-title  { flex: 1; min-width: 0; max-width: none; width: auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 8px; }
+
+  .result-row .col-channel,
+  .header-row .col-channel { width: 280px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg-muted); }
+
+  .result-row .col-dur,
+  .header-row .col-dur    { width: 60px; flex-shrink: 0; text-align: right; font-variant-numeric: tabular-nums; color: var(--fg-muted); }
+
+  .result-row .col-actions,
+  .header-row .col-actions { width: 160px; flex-shrink: 0; display: flex; align-items: center; justify-content: flex-end; white-space: nowrap; gap: 6px; }
+
+  .result-row .title-text {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   /* ── Queue header ────────────────────────────────────────────────────── */
@@ -414,6 +465,7 @@
     border-radius: 6px;
     font-size: 12px;
     line-height: 1.5;
+    flex-shrink: 0;
   }
 
   .banner-error {
@@ -489,13 +541,6 @@
   .col-action   { width: 70px; }
   .col-error    { font-size: 12px; color: var(--error); }
 
-  .title-text {
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
   /* ── Preview link ────────────────────────────────────────────────────── */
 
   .preview-link {
@@ -532,9 +577,7 @@
     transition: width 0.3s ease;
   }
 
-  .row-in-library td { font-weight: 600; }
-  .row-in-library .muted { color: var(--fg); }
-  .row-downloading td { color: var(--fg-muted); }
+  .row-in-library .col-channel { color: var(--fg); }
   .row-done .progress-fill { background: #22c55e; }
   .row-error .col-error     { padding-left: 8px; }
 
