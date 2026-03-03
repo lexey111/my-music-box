@@ -135,13 +135,15 @@
         </span>
       {/if}
       <button on:click={handleSync} disabled={syncing}>
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           {#if syncing}
-            <circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.5" stroke-dasharray="20" stroke-dashoffset="8" stroke-linecap="round" style="animation: btn-spin 0.8s linear infinite; transform-origin: center"/>
+            <circle cx="12" cy="12" r="9" stroke-dasharray="30" stroke-dashoffset="10" style="animation: btn-spin 0.8s linear infinite; transform-origin: center"/>
           {:else}
-            <rect x="2" y="3" width="9" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M5 7h5M5 10h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            <circle cx="12.5" cy="3.5" r="2" fill="currentColor" opacity="0.7"/>
+            <line x1="22" y1="12" x2="2" y2="12"/>
+            <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+            <line x1="6" y1="16" x2="6.01" y2="16"/>
+            <line x1="10" y1="16" x2="10.01" y2="16"/>
           {/if}
         </svg>
         {syncing ? 'Checking…' : 'Check files'}
@@ -225,7 +227,18 @@
                       />
                     </svg>
                   {/if}
-                  {isPlaying ? '⏸' : '▶'}
+                  {#if isPlaying}
+                    <svg class="btn-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <line x1="10" y1="18" x2="10" y2="6"/>
+                      <line x1="14" y1="18" x2="14" y2="6"/>
+                    </svg>
+                  {:else}
+                    <svg class="btn-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <polygon points="7 3 21 12 7 21 7 3"/>
+                    </svg>
+                  {/if}
                 </button>
               {/if}
             </span>
@@ -391,9 +404,7 @@
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    font-size: 10px;
     padding: 0;
-    line-height: 1;
     border: none;
     box-shadow: none;
     background: transparent;
@@ -421,6 +432,14 @@
   .btn-play.active {
     opacity: 1;
     color: var(--accent);
+  }
+
+  .btn-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
   }
 
   .progress-ring {

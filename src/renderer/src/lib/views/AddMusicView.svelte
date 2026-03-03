@@ -457,7 +457,9 @@
   .dl-btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 5px;
+    min-width: 108px;
   }
 
   .result-row .title-text {
