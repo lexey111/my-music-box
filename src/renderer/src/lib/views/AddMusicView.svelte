@@ -116,8 +116,15 @@
           </button>
         {/if}
       </div>
-      <button on:click={search} disabled={$searching || query.trim().length < 3}>
-        {#if $searching}<Spinner />{/if}
+      <button class="search-btn" on:click={search} disabled={$searching || query.trim().length < 3}>
+        {#if $searching}
+          <Spinner />
+        {:else}
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+            <circle cx="5" cy="5" r="3.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M8 8l2.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        {/if}
         {$searching ? 'Searching…' : 'Search'}
       </button>
       <label class="browser-label" title="Browser whose cookies yt-dlp will use to bypass bot detection">
@@ -179,8 +186,15 @@
                   <path d="M12 1L6.5 6.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
                 </svg>
               </a>
-              <button class:primary={status === 'available'} on:click={() => startDownload(result)} disabled={status !== 'available'}>
-                {#if status === 'downloading'}<Spinner />{/if}
+              <button class:primary={status === 'available'} class="dl-btn" on:click={() => startDownload(result)} disabled={status !== 'available'}>
+                {#if status === 'downloading'}
+                  <Spinner />
+                {:else if status === 'available'}
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M8 2v8M5 7.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M3 13h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                {/if}
                 {status === 'library' ? 'In Library' : status === 'downloading' ? 'Downloading…' : 'Download'}
               </button>
             </span>
@@ -348,6 +362,12 @@
     color: var(--fg);
   }
 
+  .search-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
   .browser-label {
     margin-left: auto;
     display: flex;
@@ -433,6 +453,12 @@
 
   .result-row .col-actions,
   .header-row .col-actions { width: 160px; flex-shrink: 0; display: flex; align-items: center; justify-content: flex-end; white-space: nowrap; gap: 6px; }
+
+  .dl-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
 
   .result-row .title-text {
     display: block;

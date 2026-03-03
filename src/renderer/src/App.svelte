@@ -4,7 +4,7 @@
     import AddMusicView from './lib/views/AddMusicView.svelte'
     import ImportMusicView from './lib/views/ImportMusicView.svelte'
     import SettingsView from './lib/views/SettingsView.svelte'
-    import {init, libraryPath, selectLibraryPath, settings, loadTracks, tracks, activeTab} from './lib/stores/app'
+    import {init, libraryPath, selectLibraryPath, settings, loadTracks, tracks, activeTab, importScanning, activeImportJob, importJobResult} from './lib/stores/app'
     import {handleProgress, handleComplete, handleError, activeJobs} from './lib/stores/downloads'
     import PlayerIsland from './lib/components/PlayerIsland.svelte'
 
@@ -33,6 +33,43 @@
             loadTracks()
         })
         window.api.download.onError(handleError)
+
+        window.api.import.onProgress((p) => {
+            activeImportJob.update(j => {
+                if (!j || j.jobId !== p.jobId) return j
+                const items = j.items.map((item, i) =>
+                    i === p.fileIndex ? { ...item, status: 'processing' as const } : item
+                )
+                return { ...j, current: p.fileIndex + 1, total: p.total, filename: p.filename, items }
+            })
+        })
+
+        window.api.import.onFileComplete((p) => {
+            tracks.update(t => [...t, p.track])
+            activeImportJob.update(j => {
+                if (!j || j.jobId !== p.jobId) return j
+                const items = j.items.map((item, i) =>
+                    i === p.fileIndex ? { ...item, status: 'done' as const } : item
+                )
+                return { ...j, items }
+            })
+        })
+
+        window.api.import.onFileError((p) => {
+            activeImportJob.update(j => {
+                if (!j || j.jobId !== p.jobId) return j
+                const items = j.items.map((item, i) =>
+                    i === p.fileIndex ? { ...item, status: 'error' as const } : item
+                )
+                return { ...j, items }
+            })
+        })
+
+        window.api.import.onDone((p) => {
+            activeImportJob.set(null)
+            importJobResult.set({ imported: p.imported, errors: p.errors })
+            loadTracks()
+        })
     })
 
     $: applyTheme($settings.theme)
@@ -138,6 +175,7 @@
                     class="gear"
                     class:active={$activeTab === 'settings'}
                     title="Settings"
+                    disabled={!!$activeImportJob}
                     on:click={() => ($activeTab = $activeTab === 'settings' ? 'library' : 'settings')}
             >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -174,8 +212,11 @@
             <div class="statusbar">
                 <span class="statusbar-path">{$libraryPath ?? ''}</span>&middot;
                 <!-- svelte-ignore a11y-invalid-attribute -->
-                <a class="statusbar-link" href="#" on:click|preventDefault={() => ($activeTab = 'settings')}>Change…</a>
-                {#if [...$activeJobs.values()].some(j => j.status === 'downloading')}<span class="statusbar-spinner" aria-label="Downloading"></span>{/if}
+                <a class="statusbar-link" class:disabled={!!$activeImportJob} href="#" on:click|preventDefault={() => { if (!$activeImportJob) $activeTab = 'settings' }}>Change…</a>
+                {#if [...$activeJobs.values()].some(j => j.status === 'downloading') || $importScanning || $activeImportJob}<span class="statusbar-spinner" aria-label="Working"></span>{/if}
+                {#if $activeImportJob}
+                    <span class="statusbar-import">Importing {$activeImportJob.current} / {$activeImportJob.total}</span>
+                {/if}
                 <span class="statusbar-right">
         {#if $tracks.length > 0}
           <span class="statusbar-stat">{$tracks.length} tracks</span>
@@ -427,6 +468,12 @@
         text-decoration: underline;
     }
 
+    .statusbar-link.disabled {
+        opacity: 0.4;
+        pointer-events: none;
+        cursor: default;
+    }
+
     .statusbar-right {
         margin-left: auto;
         display: flex;
@@ -441,6 +488,11 @@
         align-items: center;
         font-variant-numeric: tabular-nums;
         padding: 0 6px;
+    }
+
+    .statusbar-import {
+        margin-left: 6px;
+        font-variant-numeric: tabular-nums;
     }
 
     .count {

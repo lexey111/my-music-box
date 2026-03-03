@@ -125,19 +125,35 @@ export function registerIpcHandlers({ settings, getLibrary, setLibrary, download
 
   // ── Import ────────────────────────────────────────────────────────────────
 
-  ipcMain.handle('import:selectFiles', async () => {
+  ipcMain.handle('import:selectFiles', async (event) => {
     const result = await dialog.showOpenDialog({
       properties: ['openFile', 'multiSelections'],
       filters: [{ name: 'Audio', extensions: ['mp3', 'm4a', 'aac', 'flac', 'wav', 'ogg', 'opus', 'wma', 'aiff', 'aif'] }]
     })
     if (result.canceled) return []
-    return importService.scanFiles(result.filePaths)
+    return importService.scanFiles(result.filePaths, undefined, (done, total) => {
+      if (!event.sender.isDestroyed()) event.sender.send('import:scanProgress', { done, total })
+    })
   })
 
-  ipcMain.handle('import:selectFolder', async () => {
+  ipcMain.handle('import:selectFolder', async (event) => {
     const result = await dialog.showOpenDialog({ properties: ['openDirectory'] })
     if (result.canceled) return []
-    return importService.scanFolder(result.filePaths[0])
+    return importService.scanFolder(result.filePaths[0], undefined, (done, total) => {
+      if (!event.sender.isDestroyed()) event.sender.send('import:scanProgress', { done, total })
+    })
+  })
+
+  ipcMain.handle('import:scanFiles', (event, paths: string[]) => {
+    return importService.scanFiles(paths, undefined, (done, total) => {
+      if (!event.sender.isDestroyed()) event.sender.send('import:scanProgress', { done, total })
+    })
+  })
+
+  ipcMain.handle('import:scanPaths', (event, paths: string[]) => {
+    return importService.scanPaths(paths, (done, total) => {
+      if (!event.sender.isDestroyed()) event.sender.send('import:scanProgress', { done, total })
+    })
   })
 
   ipcMain.handle('import:start', (event, jobId: string, files: unknown[]) => {

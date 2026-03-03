@@ -9,6 +9,9 @@ files:
   - '!electron.vite.config.*'
   - '!svelte.config.*'
   - '!tsconfig*'
+extraResources:
+  - from: resources/icon.png
+    to: icon.png
 asarUnpack:
   # Native modules must not be asar-packed
   - node_modules/better-sqlite3/**

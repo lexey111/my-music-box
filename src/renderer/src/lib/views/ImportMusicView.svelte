@@ -1,19 +1,25 @@
 <script lang="ts">
+    import { tick } from 'svelte'
     import { createVirtualizer } from '@tanstack/svelte-virtual'
-    import {loadTracks, importFiles, importSelected, importDuplicates} from '../stores/app'
+    import {importFiles, importSelected, importDuplicates, importScanning, activeImportJob, importJobResult} from '../stores/app'
     import Spinner from '../components/Spinner.svelte'
+    import logoUrl from '../../../../../assets/logo.svg?url'
 
     let scanning = false
-    let importing = false
-    let jobId: string | null = null
-    let importProgress = {current: 0, total: 0, filename: ''}
-    let importResult: {imported: number; errors: number} | null = null
+    let scanProgress = { done: 0, total: 0 }
 
-    // Cleanup functions for IPC listeners
-    let offProgress: (() => void) | null = null
-    let offFileComplete: (() => void) | null = null
-    let offFileError: (() => void) | null = null
-    let offDone: (() => void) | null = null
+    function startScanProgress(): () => void {
+        scanProgress = { done: 0, total: 0 }
+        return window.api.import.onScanProgress((p) => {
+            if (scanProgress.total !== p.total || p.done % 5 === 0 || p.done === p.total) {
+                scanProgress = p
+            }
+        })
+    }
+
+    let dragging = false
+
+    $: importing = $activeImportJob !== null
 
     function formatDuration(s: number | null): string {
         if (s == null) return '—'
@@ -68,21 +74,48 @@
 
     async function selectFiles(): Promise<void> {
         scanning = true
+        $importScanning = true
+        const off = startScanProgress()
         try {
             const incoming = await window.api.import.selectFiles()
             await mergeIncoming(incoming)
         } finally {
             scanning = false
+            $importScanning = false
+            off()
         }
     }
 
     async function selectFolder(): Promise<void> {
         scanning = true
+        $importScanning = true
+        const off = startScanProgress()
         try {
             const incoming = await window.api.import.selectFolder()
             await mergeIncoming(incoming)
         } finally {
             scanning = false
+            $importScanning = false
+            off()
+        }
+    }
+
+    async function handleDrop(e: DragEvent): Promise<void> {
+        dragging = false
+        const files = Array.from(e.dataTransfer?.files ?? [])
+        if (files.length === 0) return
+        const paths = files.map((f) => window.api.import.getPathForFile(f)).filter(Boolean)
+        if (paths.length === 0) return
+        scanning = true
+        $importScanning = true
+        const off = startScanProgress()
+        try {
+            const incoming = await window.api.import.scanPaths(paths)
+            await mergeIncoming(incoming)
+        } finally {
+            scanning = false
+            $importScanning = false
+            off()
         }
     }
 
@@ -107,49 +140,27 @@
         $importSelected = next
     }
 
-    function removeListeners(): void {
-        offProgress?.(); offProgress = null
-        offFileComplete?.(); offFileComplete = null
-        offFileError?.(); offFileError = null
-        offDone?.(); offDone = null
-    }
-
     async function startImport(): Promise<void> {
         const selectedFiles = [...$importSelected].map(i => $importFiles[i])
-        jobId = crypto.randomUUID()
-        importProgress = {current: 0, total: selectedFiles.length, filename: ''}
-        importing = true
-        importResult = null
-
-        removeListeners()
-
-        offProgress = window.api.import.onProgress((p) => {
-            if (p.jobId !== jobId) return
-            importProgress = {current: p.fileIndex + 1, total: p.total, filename: p.filename}
+        const jobId = crypto.randomUUID()
+        importJobResult.set(null)
+        activeImportJob.set({
+            jobId,
+            current: 0,
+            total: selectedFiles.length,
+            filename: '',
+            items: selectedFiles.map(f => ({
+                filename: f.title || f.path.split('/').pop() || f.path,
+                status: 'queued'
+            }))
         })
-
-        offFileComplete = window.api.import.onFileComplete((_p) => {
-            // progress is tracked via onProgress
-        })
-
-        offFileError = window.api.import.onFileError((_p) => {
-            // errors counted in onDone
-        })
-
-        offDone = window.api.import.onDone(async (p) => {
-            if (p.jobId !== jobId) return
-            removeListeners()
-            importing = false
-            importResult = {imported: p.imported, errors: p.errors}
-            await loadTracks()
-        })
-
         await window.api.import.start(jobId, selectedFiles)
     }
 
     async function cancelImport(): Promise<void> {
-        if (!jobId) return
-        await window.api.import.cancel(jobId)
+        const job = $activeImportJob
+        if (!job) return
+        await window.api.import.cancel(job.jobId)
     }
 
     function clearList(): void {
@@ -162,8 +173,22 @@
         $importFiles = []
         $importSelected = new Set()
         $importDuplicates = new Set()
-        importResult = null
-        jobId = null
+        importJobResult.set(null)
+        activeImportJob.set(null)
+    }
+
+    // ── Progress track list auto-scroll ───────────────────────────────────────
+
+    let progressListEl: HTMLDivElement | undefined
+
+    $: if (importing && $activeImportJob?.current !== undefined) {
+        scrollToProcessing()
+    }
+
+    async function scrollToProcessing(): Promise<void> {
+        await tick()
+        if (!progressListEl) return
+        progressListEl.querySelector('.processing')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
     }
 
     // ── Virtual list ──────────────────────────────────────────────────────────
@@ -181,28 +206,84 @@
 </script>
 
 <div class="import-view">
-    <!-- Toolbar -->
-    <div class="toolbar">
-        <button class="action-btn" on:click={selectFiles} disabled={scanning || importing}>
-            Select Files…
-        </button>
-        <button class="action-btn" on:click={selectFolder} disabled={scanning || importing}>
-            Select Folder
-        </button>
-        {#if $importFiles.length > 0 && !importing && !importResult}
-            <button class="action-btn clear-btn" on:click={clearList} disabled={scanning}>
+
+    {#if $importFiles.length === 0 && !importing && !$importJobResult}
+        <!-- ── Empty / drop zone ──────────────────────────────────────────── -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <div
+            class="drop-zone"
+            class:drag-over={dragging}
+            on:dragover|preventDefault={() => (dragging = true)}
+            on:dragleave={() => (dragging = false)}
+            on:drop|preventDefault={handleDrop}
+        >
+            {#if scanning}
+                <p class="drop-hint">Scanning…</p>
+                {#if scanProgress.total > 0}
+                    <p class="scan-count-label">{scanProgress.done} / {scanProgress.total} files</p>
+                    <progress class="scan-progress" value={scanProgress.done} max={scanProgress.total}></progress>
+                {:else}
+                    <Spinner />
+                {/if}
+            {:else}
+                <img class="drop-icon" src={logoUrl} alt="My Music Box" aria-hidden="true" />
+                <p class="drop-hint">
+                    Select audio files or a folder to add to the import list.<br>
+                    You can also drag and drop files here.
+                </p>
+                <div class="drop-buttons">
+                    <button class="action-btn icon-btn" on:click={selectFiles} disabled={scanning}>
+                        <svg width="12" height="13" viewBox="0 0 12 13" fill="none" aria-hidden="true">
+                            <path d="M7 1H2.5A1.5 1.5 0 0 0 1 2.5v8A1.5 1.5 0 0 0 2.5 12h7A1.5 1.5 0 0 0 11 10.5V5L7 1z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/>
+                            <path d="M7 1v4h4" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/>
+                        </svg>
+                        Select Files…
+                    </button>
+                    <button class="action-btn icon-btn" on:click={selectFolder} disabled={scanning}>
+                        <svg width="14" height="12" viewBox="0 0 14 12" fill="none" aria-hidden="true">
+                            <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h2.586a1 1 0 0 1 .707.293L7 3h4.5A1.5 1.5 0 0 1 13 4.5v5A1.5 1.5 0 0 1 11.5 11h-9A1.5 1.5 0 0 1 1 9.5v-7z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/>
+                        </svg>
+                        Select Folder
+                    </button>
+                </div>
+            {/if}
+        </div>
+    {/if}
+
+    {#if $importFiles.length > 0 && !importing && !$importJobResult}
+        <!-- ── Toolbar (only when list has items) ───────────────────────── -->
+        <div class="toolbar">
+            <button class="action-btn icon-btn" on:click={selectFiles} disabled={scanning || importing}>
+                <svg width="12" height="13" viewBox="0 0 12 13" fill="none" aria-hidden="true">
+                    <path d="M7 1H2.5A1.5 1.5 0 0 0 1 2.5v8A1.5 1.5 0 0 0 2.5 12h7A1.5 1.5 0 0 0 11 10.5V5L7 1z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/>
+                    <path d="M7 1v4h4" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/>
+                </svg>
+                Select Files…
+            </button>
+            <button class="action-btn icon-btn" on:click={selectFolder} disabled={scanning || importing}>
+                <svg width="14" height="12" viewBox="0 0 14 12" fill="none" aria-hidden="true">
+                    <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h2.586a1 1 0 0 1 .707.293L7 3h4.5A1.5 1.5 0 0 1 13 4.5v5A1.5 1.5 0 0 1 11.5 11h-9A1.5 1.5 0 0 1 1 9.5v-7z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/>
+                </svg>
+                Select Folder
+            </button>
+            <button class="action-btn clear-btn" on:click={clearList} disabled={scanning || importing}>
                 Clear
             </button>
-        {/if}
-        {#if scanning}
-            <span class="scan-status">
-                <Spinner/>
-                Scanning…
-            </span>
-        {/if}
-    </div>
+            {#if scanning}
+                <span class="scan-status">
+                    <Spinner/>
+                    {#if scanProgress.total > 0}
+                        Scanning…
+                        <span class="scan-nums"
+                            style="min-width: calc({scanProgress.total.toString().length * 2 + 3} * 1ch)"
+                        >{scanProgress.done} / {scanProgress.total}</span>
+                    {:else}
+                        Scanning…
+                    {/if}
+                </span>
+            {/if}
+        </div>
 
-    {#if $importFiles.length > 0 && !importing && !importResult}
         <!-- Column headers — outside scroll container, matching LibraryView pattern -->
         <div class="header-row">
             <span class="col-check">
@@ -243,8 +324,8 @@
                                     on:change={() => toggleRow(i)}
                                 />
                             </span>
-                            <span class="col-title" title={file.title}>
-                                {file.title}
+                            <span class="col-title">
+                                <span class="title-text" title={file.title}>{file.title}</span>
                                 {#if $importDuplicates.has(i)}
                                     <span class="dup-badge">Already in library</span>
                                 {/if}
@@ -272,20 +353,46 @@
     {/if}
 
     {#if importing}
+        <!-- Toolbar with buttons disabled during import -->
+        <div class="toolbar">
+            <button class="action-btn" disabled>Select Files…</button>
+            <button class="action-btn" disabled>Select Folder</button>
+            <span class="import-counter">{$activeImportJob?.current ?? 0} / {$activeImportJob?.total ?? 0}</span>
+        </div>
         <!-- Progress view -->
         <div class="progress-view">
-            <div class="progress-filename">{importProgress.filename}</div>
-            <div class="progress-counter">{importProgress.current} / {importProgress.total}</div>
+            <div class="track-list-wrap">
+                <div class="track-list" bind:this={progressListEl}>
+                    {#each $activeImportJob?.items ?? [] as item}
+                        <div class="track-row" class:processing={item.status === 'processing'} class:done={item.status === 'done'} class:error={item.status === 'error'}>
+                            <span class="track-icon">
+                                {#if item.status === 'queued'}
+                                    <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.5"/></svg>
+                                {:else if item.status === 'processing'}
+                                    <svg class="spinning" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.5" stroke-dasharray="20" stroke-dashoffset="8" stroke-linecap="round"/></svg>
+                                {:else if item.status === 'done'}
+                                    <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" fill="currentColor" opacity="0.2"/><path d="M5.5 8l1.8 1.8 3.2-3.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                {:else}
+                                    <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" fill="currentColor" opacity="0.2"/><path d="M6 6l4 4M10 6l-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                                {/if}
+                            </span>
+                            <span class="track-name">{item.filename}</span>
+                        </div>
+                    {/each}
+                </div>
+                <div class="fade-top"></div>
+                <div class="fade-bottom"></div>
+            </div>
             <button class="action-btn" on:click={cancelImport}>Cancel</button>
         </div>
     {/if}
 
-    {#if importResult}
+    {#if $importJobResult}
         <!-- Completion summary -->
         <div class="result-view">
             <p class="result-text">
-                Imported {importResult.imported} track{importResult.imported !== 1 ? 's' : ''}
-                {#if importResult.errors > 0}, {importResult.errors} error{importResult.errors !== 1 ? 's' : ''}{/if}
+                Imported {$importJobResult.imported} track{$importJobResult.imported !== 1 ? 's' : ''}
+                {#if $importJobResult.errors > 0}, {$importJobResult.errors} error{$importJobResult.errors !== 1 ? 's' : ''}{/if}
             </p>
             <button class="primary" on:click={reset}>Done</button>
         </div>
@@ -298,6 +405,64 @@
         flex-direction: column;
         height: 100%;
         overflow: hidden;
+    }
+
+    /* ── Empty / drag-drop zone ──────────────────────────────────── */
+    .drop-zone {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        padding: 32px;
+        text-align: center;
+        transition: background 0.12s, outline 0.12s;
+        outline: 2px dashed transparent;
+        outline-offset: -12px;
+        border-radius: 4px;
+    }
+
+    .drop-zone.drag-over {
+        background: var(--bg-selected);
+        outline-color: var(--accent);
+    }
+
+    .drop-icon {
+        width: 72px;
+        height: 72px;
+        opacity: 0.85;
+    }
+
+    .drop-hint {
+        font-size: 13px;
+        color: var(--fg-muted);
+        line-height: 1.6;
+        max-width: 320px;
+        margin: 0;
+    }
+
+    .drop-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 4px;
+    }
+
+    .scan-count-label {
+        font-size: 13px;
+        color: var(--fg-muted);
+        font-variant-numeric: tabular-nums;
+        width: 240px;
+        max-width: 80%;
+        text-align: center;
+        margin: 0;
+    }
+
+    .scan-progress {
+        width: 240px;
+        max-width: 80%;
+        height: 4px;
+        accent-color: var(--accent);
     }
 
     .toolbar {
@@ -318,9 +483,21 @@
         color: var(--fg-muted);
     }
 
+    .scan-nums {
+        font-variant-numeric: tabular-nums;
+        display: inline-block;
+        text-align: right;
+    }
+
     .action-btn {
         font-size: 12px;
         padding: 5px 12px;
+    }
+
+    .icon-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
     }
 
     .clear-btn {
@@ -364,26 +541,41 @@
 
     .import-row:hover { background: var(--bg-hover); }
     .import-row.selected { background: var(--bg-selected); }
-    .import-row.duplicate { opacity: 0.45; cursor: default; }
+    .import-row.duplicate { cursor: default; }
     .import-row.duplicate:hover { background: transparent; }
+    .import-row.duplicate .col-check,
+    .import-row.duplicate .col-artist,
+    .import-row.duplicate .col-duration,
+    .import-row.duplicate .col-file { opacity: 0.45; }
+    .import-row.duplicate .title-text { opacity: 0.45; }
 
     /* Columns */
     .col-check    { width: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-    .col-title    { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 12px; }
+    .col-title    { flex: 1; display: flex; align-items: center; gap: 6px; overflow: hidden; padding-right: 12px; }
+    .title-text   { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .col-artist   { width: 180px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg-muted); padding-right: 12px; }
     .col-duration { width: 70px; flex-shrink: 0; color: var(--fg-muted); font-variant-numeric: tabular-nums; text-align: right; }
     .col-file     { width: 80px; flex-shrink: 0; color: var(--fg-muted); font-variant-numeric: tabular-nums; text-align: right; }
 
     .dup-badge {
         display: inline-block;
-        margin-left: 6px;
+        flex-shrink: 0;
+        margin-left: 0;
         font-size: 10px;
-        padding: 1px 5px;
+        font-weight: 500;
+        padding: 1px 6px;
         border-radius: 3px;
-        background: var(--bg-hover);
-        color: var(--fg-muted);
+        background: #16a34a22;
+        color: #16a34a;
+        border: 1px solid #16a34a44;
         vertical-align: middle;
         white-space: nowrap;
+    }
+
+    :global([data-theme='dark']) .dup-badge {
+        background: #22c55e1a;
+        color: #4ade80;
+        border-color: #22c55e33;
     }
 
     /* Action bar */
@@ -401,31 +593,114 @@
         color: var(--fg-muted);
     }
 
+    .import-counter {
+        margin-left: auto;
+        font-size: 12px;
+        color: var(--fg-muted);
+        font-variant-numeric: tabular-nums;
+    }
+
     /* Progress view */
     .progress-view {
         flex: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
         gap: 12px;
-        padding: 24px;
+        padding: 0 0 16px;
+        min-height: 0;
     }
 
-    .progress-filename {
+    /* ── Rolling track list ───────────────────────────────────── */
+    .track-list-wrap {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+        width: 100%;
+    }
+
+    .track-list {
+        height: 100%;
+        overflow-y: auto;
+        scrollbar-width: none;
+        padding: 24px 0;
+    }
+
+    .track-list::-webkit-scrollbar { display: none; }
+
+    .track-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        height: 36px;
+        padding: 0 40px;
         font-size: 13px;
-        max-width: 80%;
+        color: var(--fg-muted);
+        opacity: 0.45;
+        transition: opacity 0.2s, color 0.2s;
+    }
+
+    .track-row.processing {
+        opacity: 1;
+        color: var(--fg);
+    }
+
+    .track-row.done {
+        opacity: 0.55;
+    }
+
+    .track-row.error {
+        opacity: 1;
+        color: var(--error, #e05252);
+    }
+
+    .track-icon {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: inherit;
+    }
+
+    .track-icon svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .track-icon .spinning {
+        animation: track-spin 0.8s linear infinite;
+        color: var(--accent);
+    }
+
+    @keyframes track-spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .track-name {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        color: var(--fg);
     }
 
-    .progress-counter {
-        font-size: 24px;
-        font-weight: 600;
-        font-variant-numeric: tabular-nums;
-        color: var(--fg);
+    .fade-top,
+    .fade-bottom {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 72px;
+        pointer-events: none;
+    }
+
+    .fade-top {
+        top: 0;
+        background: linear-gradient(to bottom, var(--bg), transparent);
+    }
+
+    .fade-bottom {
+        bottom: 0;
+        background: linear-gradient(to top, var(--bg), transparent);
     }
 
     /* Result view */

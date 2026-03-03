@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer, webUtils } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import type { AppSettings } from '../main/services/SettingsService'
 import type { Track, SyncResult } from '../main/services/LibraryService'
@@ -87,6 +87,20 @@ const api = {
 
     selectFolder: (): Promise<ImportFileInfo[]> =>
       ipcRenderer.invoke('import:selectFolder'),
+
+    scanFiles: (paths: string[]): Promise<ImportFileInfo[]> =>
+      ipcRenderer.invoke('import:scanFiles', paths),
+
+    scanPaths: (paths: string[]): Promise<ImportFileInfo[]> =>
+      ipcRenderer.invoke('import:scanPaths', paths),
+
+    getPathForFile: (file: File): string => webUtils.getPathForFile(file),
+
+    onScanProgress: (cb: (payload: { done: number; total: number }) => void): (() => void) => {
+      const listener = (_: Electron.IpcRendererEvent, payload: { done: number; total: number }): void => cb(payload)
+      ipcRenderer.on('import:scanProgress', listener)
+      return () => ipcRenderer.off('import:scanProgress', listener)
+    },
 
     start: (jobId: string, files: ImportFileInfo[]): Promise<void> =>
       ipcRenderer.invoke('import:start', jobId, files),

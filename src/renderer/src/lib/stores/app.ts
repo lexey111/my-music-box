@@ -22,6 +22,25 @@ export const settings = writable<AppSettings>({
 export const tracks = writable<Track[]>([])
 export const search = writable('')
 export const loading = writable(false)
+export const importScanning = writable(false)
+
+export type ImportJobItemStatus = 'queued' | 'processing' | 'done' | 'error'
+
+export interface ImportJobItem {
+  filename: string
+  status: ImportJobItemStatus
+}
+
+export interface ImportJobState {
+  jobId: string
+  current: number
+  total: number
+  filename: string
+  items: ImportJobItem[]
+}
+
+export const activeImportJob = writable<ImportJobState | null>(null)
+export const importJobResult = writable<{ imported: number; errors: number } | null>(null)
 export const selectedIds = writable<Set<number>>(new Set())
 export const activeTab = writable<'library' | 'addMusic' | 'importMusic' | 'settings'>('library')
 
@@ -44,6 +63,12 @@ export async function loadTracks(query?: string): Promise<void> {
     const q = query ?? get(search)
     const result = await window.api.library.getTracks(q || undefined)
     tracks.set(result)
+
+    const files = get(importFiles)
+    if (files.length > 0) {
+      const dupIndices = await window.api.import.checkDuplicates(files)
+      importDuplicates.set(new Set(dupIndices))
+    }
   } finally {
     loading.set(false)
   }
@@ -82,6 +107,11 @@ export function toggleSelect(id: number): void {
 
 export function clearSelection(): void {
   selectedIds.set(new Set())
+}
+
+export function selectMissing(): void {
+  const missing = get(tracks).filter(t => t.status === 'missing').map(t => t.id)
+  selectedIds.set(new Set(missing))
 }
 
 export async function setSetting<K extends keyof AppSettings>(

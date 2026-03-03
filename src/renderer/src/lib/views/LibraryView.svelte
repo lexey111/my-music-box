@@ -10,6 +10,7 @@
     sync,
     toggleSelect,
     clearSelection,
+    selectMissing,
     activeTab
   } from '../stores/app'
   import { redownloadTrack } from '../stores/downloads'
@@ -55,6 +56,8 @@
     )
     if (ok) await deleteTracks(ids)
   }
+
+  $: missingCount = $tracks.filter(t => t.status === 'missing').length
 
   // ── Sync ───────────────────────────────────────────────────────────────────
 
@@ -117,6 +120,14 @@
         <button class="danger" on:click={handleDelete}>
           Delete ({$selectedIds.size})
         </button>
+      {:else if missingCount > 0}
+        <button class="danger-soft" on:click={selectMissing}>
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M8 5v3.5M8 10.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          Select missing ({missingCount})
+        </button>
       {/if}
       {#if syncResult}
         <span class="sync-result">
@@ -124,6 +135,15 @@
         </span>
       {/if}
       <button on:click={handleSync} disabled={syncing}>
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          {#if syncing}
+            <circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.5" stroke-dasharray="20" stroke-dashoffset="8" stroke-linecap="round" style="animation: btn-spin 0.8s linear infinite; transform-origin: center"/>
+          {:else}
+            <rect x="2" y="3" width="9" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M5 7h5M5 10h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="12.5" cy="3.5" r="2" fill="currentColor" opacity="0.7"/>
+          {/if}
+        </svg>
         {syncing ? 'Checking…' : 'Check files'}
       </button>
     </div>
@@ -178,6 +198,10 @@
             <span class="col-action">
               {#if track.status === 'missing'}
                 <button class="btn-redownload" on:click|stopPropagation={() => handleRedownload(track)}>
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M8 2v8M5 7.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M3 13h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
                   Download again
                 </button>
               {:else}
@@ -252,6 +276,25 @@
     display: flex;
     align-items: center;
     gap: 6px;
+  }
+
+  .actions button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .danger-soft {
+    color: var(--error);
+    opacity: 0.8;
+  }
+
+  .danger-soft:hover {
+    opacity: 1;
+  }
+
+  @keyframes btn-spin {
+    to { transform: rotate(360deg); }
   }
 
   /* ── Column header ──────────────────────────────────────────────────────── */
@@ -331,6 +374,14 @@
 
   .dot.dot-missing {
     background: var(--error);
+  }
+
+  /* ── Redownload button ───────────────────────────────────────────────────── */
+
+  .btn-redownload {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
   }
 
   /* ── Play button ─────────────────────────────────────────────────────────── */

@@ -104,14 +104,23 @@ async function probeFile(filePath: string): Promise<ImportFileInfo> {
   })
 }
 
-async function runInParallel<T>(items: T[], fn: (item: T) => Promise<T extends string ? ImportFileInfo : never>, concurrency: number): Promise<ImportFileInfo[]> {
+async function runInParallel<T>(
+  items: T[],
+  fn: (item: T) => Promise<T extends string ? ImportFileInfo : never>,
+  concurrency: number,
+  onProgress?: (done: number, total: number) => void
+): Promise<ImportFileInfo[]> {
   const results: ImportFileInfo[] = []
   let index = 0
+  let done = 0
+  const total = items.length
 
   async function worker(): Promise<void> {
     while (index < items.length) {
       const i = index++
       results[i] = await (fn as (item: T) => Promise<ImportFileInfo>)(items[i])
+      done++
+      onProgress?.(done, total)
     }
   }
 
@@ -123,12 +132,12 @@ async function runInParallel<T>(items: T[], fn: (item: T) => Promise<T extends s
 export class ImportService {
   private activeImports = new Map<string, ActiveImport>()
 
-  async scanFiles(paths: string[], existingPaths?: Set<string>): Promise<ImportFileInfo[]> {
+  async scanFiles(paths: string[], existingPaths?: Set<string>, onProgress?: (done: number, total: number) => void): Promise<ImportFileInfo[]> {
     const filtered = existingPaths ? paths.filter(p => !existingPaths.has(p)) : paths
-    return runInParallel(filtered, probeFile as (item: string) => Promise<ImportFileInfo>, 4)
+    return runInParallel(filtered, probeFile as (item: string) => Promise<ImportFileInfo>, 4, onProgress)
   }
 
-  async scanFolder(folderPath: string, existingPaths?: Set<string>): Promise<ImportFileInfo[]> {
+  async scanFolder(folderPath: string, existingPaths?: Set<string>, onProgress?: (done: number, total: number) => void): Promise<ImportFileInfo[]> {
     const entries = readdirSync(folderPath, { recursive: true, encoding: 'utf-8' }) as string[]
     const audioPaths = entries
       .map((rel) => join(folderPath, rel))
@@ -139,7 +148,28 @@ export class ImportService {
           return false
         }
       })
-    return this.scanFiles(audioPaths, existingPaths)
+    return this.scanFiles(audioPaths, existingPaths, onProgress)
+  }
+
+  async scanPaths(paths: string[], onProgress?: (done: number, total: number) => void): Promise<ImportFileInfo[]> {
+    const filePaths: string[] = []
+    for (const p of paths) {
+      try {
+        if (statSync(p).isDirectory()) {
+          const entries = readdirSync(p, { recursive: true, encoding: 'utf-8' }) as string[]
+          for (const rel of entries) {
+            const full = join(p, rel)
+            try {
+              if (statSync(full).isFile() && AUDIO_EXTENSIONS.has(extname(full).toLowerCase()))
+                filePaths.push(full)
+            } catch { /* ignore */ }
+          }
+        } else if (AUDIO_EXTENSIONS.has(extname(p).toLowerCase())) {
+          filePaths.push(p)
+        }
+      } catch { /* ignore */ }
+    }
+    return this.scanFiles(filePaths, undefined, onProgress)
   }
 
   checkLibraryDuplicates(files: ImportFileInfo[], library: LibraryService): number[] {
