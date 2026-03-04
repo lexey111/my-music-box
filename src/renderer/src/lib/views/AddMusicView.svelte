@@ -295,13 +295,13 @@
             </svg>
           </button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body island">
           <p>YouTube limits downloads by bots. Passing your browser's cookies to yt-dlp lets it act as a logged-in user and bypass these restrictions.</p>
           <p><strong>Before searching or downloading:</strong> open the selected browser and make sure you are logged in to YouTube.</p>
           <p>Choose <em>No cookies</em> if you don't need this or if yt-dlp works without it for your use case.</p>
         </div>
         <div class="modal-footer">
-          <button on:click={() => (cookiesHelpOpen = false)}>Close</button>
+          <button class="btn-primary" on:click={() => (cookiesHelpOpen = false)}>Close</button>
         </div>
       </div>
     </div>
@@ -718,21 +718,21 @@
   }
 
   .modal-card {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
     width: 340px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
     display: flex;
     flex-direction: column;
+    gap: 6px;
+    background: var(--bg-app);
+    border-radius: 14px;
+    padding: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.22);
   }
 
   .modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 16px 10px;
-    border-bottom: 1px solid var(--separator);
+    padding: 2px 4px 0;
   }
 
   .modal-header h3 {
@@ -770,9 +770,20 @@
   .modal-footer {
     display: flex;
     justify-content: flex-end;
-    padding: 10px 16px 14px;
-    border-top: 1px solid var(--separator);
+    padding: 0 4px 2px;
   }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--accent-fg);
+    border: none;
+    border-radius: var(--radius);
+    padding: 5px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .btn-primary:hover { opacity: 0.88; }
 
   /* ── Empty state ─────────────────────────────────────────────────────── */
 
