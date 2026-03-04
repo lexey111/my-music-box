@@ -15,6 +15,8 @@ import { registerIpcHandlers } from './ipc/handlers'
 // for a music player.
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
 
+app.setName('My Music Box')
+
 interface WindowBounds { x: number; y: number; width: number; height: number }
 interface WindowState {
   mainBounds?: WindowBounds
@@ -195,6 +197,12 @@ app.whenReady().then(() => {
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
+  })
+
+  app.setAboutPanelOptions({
+    applicationName: 'My Music Box',
+    applicationVersion: app.getVersion(),
+    copyright: `© ${new Date().getFullYear()} My Music Box`,
   })
 })
 

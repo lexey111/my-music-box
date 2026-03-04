@@ -157,7 +157,6 @@
                     class:active={$activeTab === 'library'}
                     on:click={() => ($activeTab = 'library')}
             >Library
-                {#if $tracks.length > 0}<span class="count">{$tracks.length}</span>{/if}
             </button>
             <button
                     class="tab"
@@ -219,7 +218,15 @@
             <div class="statusbar">
                 <span class="statusbar-path">{$libraryPath ?? ''}</span>&middot;
                 <!-- svelte-ignore a11y-invalid-attribute -->
-                <a class="statusbar-link" class:disabled={!!$activeImportJob} href="#" on:click|preventDefault={() => { if (!$activeImportJob) $activeTab = 'settings' }}>Change…</a>
+                <a class="statusbar-link" class:disabled={!!$activeImportJob} href="#" on:click|preventDefault={() => { if (!$activeImportJob) $activeTab = 'settings' }}>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
+                        <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
+                        <line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>
+                    </svg>
+                    Change…
+                </a>
                 {#if [...$activeJobs.values()].some(j => j.status === 'downloading') || $importScanning || $activeImportJob}<span class="statusbar-spinner" aria-label="Working"></span>{/if}
                 {#if $activeImportJob}
                     <span class="statusbar-import">Importing {$activeImportJob.current} / {$activeImportJob.total}</span>
@@ -467,6 +474,7 @@
         flex-shrink: 0;
         display: flex;
         align-items: center;
+        gap: 4px;
         padding: 0 6px;
     }
 
@@ -502,19 +510,4 @@
         font-variant-numeric: tabular-nums;
     }
 
-    .count {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 18px;
-        height: 16px;
-        padding: 0 5px;
-        border-radius: 8px;
-        background: var(--bg-tertiary, var(--border));
-        color: var(--fg-muted);
-        font-size: 11px;
-        font-weight: 500;
-        margin-left: 5px;
-        vertical-align: middle;
-    }
 </style>
