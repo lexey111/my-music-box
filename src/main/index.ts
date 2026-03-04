@@ -121,10 +121,20 @@ app.whenReady().then(() => {
   const downloadService = new DownloadService()
   const importService = new ImportService()
 
-  // If a library path was previously saved, open it straight away
+  // If a library path was previously saved and already has data, open it.
+  // If the folder is empty, wait for the user to explicitly permit creation.
   const savedPath = settings.get('libraryPath')
   if (savedPath) {
-    library = new LibraryService(savedPath)
+    const hasDb = existsSync(join(savedPath, 'library.db'))
+    const hasTracksDir = existsSync(join(savedPath, 'tracks'))
+    if (hasDb || hasTracksDir) {
+      try {
+        library = new LibraryService(savedPath)
+      } catch (e) {
+        console.error('[library] Failed to open library at saved path:', savedPath, e)
+        library = null
+      }
+    }
   }
 
   registerIpcHandlers({

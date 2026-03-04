@@ -23,6 +23,7 @@ export const tracks = writable<Track[]>([])
 export const search = writable('')
 export const loading = writable(false)
 export const importScanning = writable(false)
+export const libraryValid = writable<boolean>(true)
 
 export type ImportJobItemStatus = 'queued' | 'processing' | 'done' | 'error'
 
@@ -53,7 +54,9 @@ export async function init(): Promise<void> {
   settings.set(s)
 
   if (s.libraryPath) {
-    await loadTracks()
+    const valid = await window.api.settings.isLibraryValid()
+    libraryValid.set(valid)
+    if (valid) await loadTracks()
   }
 }
 
@@ -74,12 +77,20 @@ export async function loadTracks(query?: string): Promise<void> {
   }
 }
 
+export async function initLibrary(): Promise<void> {
+  const ok = await window.api.settings.initLibrary()
+  libraryValid.set(ok)
+  if (ok) await loadTracks()
+}
+
 export async function selectLibraryPath(): Promise<void> {
   const path = await window.api.settings.selectLibraryPath()
   if (!path) return
 
   settings.update((s) => ({ ...s, libraryPath: path }))
-  await loadTracks()
+  const valid = await window.api.settings.isLibraryValid()
+  libraryValid.set(valid)
+  if (valid) await loadTracks()
 }
 
 export async function deleteTracks(ids: number[]): Promise<void> {

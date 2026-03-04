@@ -10,7 +10,7 @@
     import AddMusicView from './lib/views/AddMusicView.svelte'
     import ImportMusicView from './lib/views/ImportMusicView.svelte'
     import SettingsView from './lib/views/SettingsView.svelte'
-    import {init, libraryPath, selectLibraryPath, settings, loadTracks, tracks, activeTab, importScanning, activeImportJob, importJobResult} from './lib/stores/app'
+    import {init, libraryPath, libraryValid, initLibrary, selectLibraryPath, settings, loadTracks, tracks, activeTab, importScanning, activeImportJob, importJobResult} from './lib/stores/app'
     import {handleProgress, handleComplete, handleError, activeJobs} from './lib/stores/downloads'
     import PlayerIsland from './lib/components/PlayerIsland.svelte'
 
@@ -148,6 +148,20 @@
             <button class="primary" on:click={selectLibraryPath}>
                 Choose Library Folder
             </button>
+        </div>
+    </div>
+{:else if $libraryPath && !$libraryValid}
+    <div class="setup">
+        <div class="drag-region"></div>
+        <div class="setup-card">
+            <h1>My Music Box</h1>
+            <p>The selected folder doesn't have a music library yet.</p>
+            <p class="path-display">{$libraryPath}</p>
+            <p>Allow the app to create a <code>library.db</code> and a <code>tracks/</code> folder there?</p>
+            <div class="permit-actions">
+                <button class="primary" on:click={initLibrary}>Permit</button>
+                <button on:click={selectLibraryPath}>Choose Another Folder…</button>
+            </div>
         </div>
     </div>
 {:else if isMini}
@@ -304,6 +318,27 @@
         background: var(--bg-secondary);
         padding: 1px 4px;
         border-radius: 3px;
+    }
+
+    .path-display {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--fg-muted);
+        background: var(--bg-secondary);
+        padding: 6px 10px;
+        border-radius: var(--radius);
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin: 0;
+    }
+
+    .permit-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        flex-wrap: wrap;
     }
 
     /* ── Mini shell ─────────────────────────────────────────────────────── */

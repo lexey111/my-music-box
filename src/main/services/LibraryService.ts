@@ -16,6 +16,7 @@ export interface Track {
   normalized: number
   status: 'ok' | 'missing'
   hash: string | null
+  filename: string
 }
 
 export interface SyncResult {
@@ -72,6 +73,12 @@ export class LibraryService {
       CREATE INDEX IF NOT EXISTS idx_tracks_artist ON tracks(artist);
       CREATE INDEX IF NOT EXISTS idx_tracks_hash   ON tracks(hash);
     `)
+
+    const cols = this.db.prepare("PRAGMA table_info(tracks)").all() as { name: string }[]
+    if (!cols.some(c => c.name === 'filename')) {
+      this.db.exec("ALTER TABLE tracks ADD COLUMN filename TEXT")
+      this.db.exec("UPDATE tracks SET filename = printf('%06d.mp3', id) WHERE filename IS NULL")
+    }
   }
 
   getTracks(search?: string): Track[] {
@@ -96,7 +103,7 @@ export class LibraryService {
     const track = this.getTrack(id)
     if (!track) return false
 
-    const filePath = this.filePath(id)
+    const filePath = this.filePath(id, track.filename)
     if (existsSync(filePath)) {
       unlinkSync(filePath)
     }
@@ -118,8 +125,8 @@ export class LibraryService {
 
   sync(): SyncResult {
     const rows = this.db
-      .prepare('SELECT id, status FROM tracks')
-      .all() as Pick<Track, 'id' | 'status'>[]
+      .prepare('SELECT id, status, filename FROM tracks')
+      .all() as Pick<Track, 'id' | 'status' | 'filename'>[]
 
     const updateStatus = this.db.prepare('UPDATE tracks SET status = ? WHERE id = ?')
     let markedMissing = 0
@@ -127,7 +134,7 @@ export class LibraryService {
 
     const runSync = this.db.transaction(() => {
       for (const row of rows) {
-        const exists = existsSync(this.filePath(row.id))
+        const exists = existsSync(this.filePath(row.id, row.filename))
         if (!exists && row.status === 'ok') {
           updateStatus.run('missing', row.id)
           markedMissing++
@@ -142,8 +149,47 @@ export class LibraryService {
     return { markedMissing, restored, totalTracks: rows.length }
   }
 
-  filePath(id: number): string {
-    return join(this.tracksDir, `${String(id).padStart(6, '0')}.mp3`)
+  filePath(_id: number, filename: string): string {
+    return join(this.tracksDir, filename)
+  }
+
+  private sanitizeForFilename(text: string): string {
+    return text
+      // Remove emojis and other non-printable Unicode symbols
+      .replace(/[\u{1F000}-\u{1FFFF}]/gu, '')
+      .replace(/[\u{2600}-\u{27BF}]/gu, '')
+      .replace(/[\uFE00-\uFE0F]/g, '') // variation selectors
+      // Remove filesystem-unsafe chars and control chars
+      .replace(/[<>:"/\\|?*\u0000-\u001F]/g, '')
+      // Collapse multiple spaces, trim spaces and dots
+      .replace(/\s+/g, ' ')
+      .trim()
+      .replace(/^\.+|\.+$/g, '')
+      .trim()
+  }
+
+  private generateFilename(title: string, artist: string | null, id: number): string {
+    const safeTitle = this.sanitizeForFilename(title)
+    const safeArtist = artist ? this.sanitizeForFilename(artist) : ''
+
+    let base = safeTitle && safeArtist
+      ? `${safeTitle} - ${safeArtist}`
+      : safeTitle || safeArtist || String(id).padStart(6, '0')
+
+    if (base.length > 200) base = base.slice(0, 200).trimEnd()
+
+    const checkExists = this.db.prepare('SELECT id FROM tracks WHERE filename = ? AND id != ?')
+
+    let candidate = `${base}.mp3`
+    let suffix = 2
+    while (
+      checkExists.get(candidate, id) !== undefined ||
+      existsSync(join(this.tracksDir, candidate))
+    ) {
+      candidate = `${base} (${suffix}).mp3`
+      suffix++
+    }
+    return candidate
   }
 
   insertTrack(input: InsertTrackInput, tempFilePath: string): Track {
@@ -153,13 +199,18 @@ export class LibraryService {
       : undefined
 
     if (existing) {
-      const dest = this.filePath(existing.id)
+      const newFilename = this.generateFilename(input.title, input.artist, existing.id)
+      const dest = this.filePath(existing.id, newFilename)
+      if (newFilename !== existing.filename) {
+        const oldPath = this.filePath(existing.id, existing.filename)
+        if (existsSync(oldPath)) unlinkSync(oldPath)
+      }
       renameSync(tempFilePath, dest)
       const { size } = statSync(dest)
       const hash = this.md5(dest)
       this.db.prepare(`
-        UPDATE tracks SET title=?, artist=?, duration=?, bitrate=?, normalized=?, status='ok', file_size=?, hash=? WHERE id=?
-      `).run(input.title, input.artist, input.duration, input.bitrate, input.normalized, size, hash, existing.id)
+        UPDATE tracks SET title=?, artist=?, duration=?, bitrate=?, normalized=?, status='ok', file_size=?, hash=?, filename=? WHERE id=?
+      `).run(input.title, input.artist, input.duration, input.bitrate, input.normalized, size, hash, newFilename, existing.id)
       return this.getTrack(existing.id)!
     }
 
@@ -169,15 +220,16 @@ export class LibraryService {
     `).run(input)
     const id = result.lastInsertRowid as number
 
-    const dest = this.filePath(id)
+    const filename = this.generateFilename(input.title, input.artist, id)
+    const dest = this.filePath(id, filename)
     renameSync(tempFilePath, dest)
 
     const { size } = statSync(dest)
     const hash = this.md5(dest)
 
     this.db
-      .prepare('UPDATE tracks SET file_size = ?, hash = ? WHERE id = ?')
-      .run(size, hash, id)
+      .prepare('UPDATE tracks SET file_size = ?, hash = ?, filename = ? WHERE id = ?')
+      .run(size, hash, filename, id)
 
     return this.getTrack(id)!
   }

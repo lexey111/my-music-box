@@ -1,6 +1,7 @@
 import { ipcMain, dialog, app, nativeTheme } from 'electron'
 import { randomUUID } from 'crypto'
-import { readFileSync } from 'fs'
+import { readFileSync, existsSync } from 'fs'
+import { join } from 'path'
 import { LibraryService } from '../services/LibraryService'
 import { SettingsService } from '../services/SettingsService'
 import { DownloadService } from '../services/DownloadService'
@@ -28,6 +29,19 @@ export function registerIpcHandlers({ settings, getLibrary, setLibrary, download
   })
 
   ipcMain.handle('settings:selectLibraryPath', async () => {
+    if (getLibrary()) {
+      const { response } = await dialog.showMessageBox({
+        type: 'warning',
+        buttons: ['Change Folder', 'Cancel'],
+        defaultId: 1,
+        cancelId: 1,
+        title: 'Change Library Folder',
+        message: 'Change music library folder?',
+        detail: 'The current library will be disconnected. Your files and database will remain in the old folder — nothing will be deleted.'
+      })
+      if (response === 1) return null
+    }
+
     const result = await dialog.showOpenDialog({
       properties: ['openDirectory', 'createDirectory'],
       title: 'Select or create your Music Library folder'
@@ -39,13 +53,40 @@ export function registerIpcHandlers({ settings, getLibrary, setLibrary, download
 
     const old = getLibrary()
     if (old) old.close()
+    setLibrary(null)
 
-    const library = new LibraryService(libraryPath)
-    setLibrary(library)
     settings.set('libraryPath', libraryPath)
+
+    // If the folder already has library data, open it immediately.
+    // If not, the renderer will show the permission screen.
+    const hasDb = existsSync(join(libraryPath, 'library.db'))
+    const hasTracksDir = existsSync(join(libraryPath, 'tracks'))
+    if (hasDb || hasTracksDir) {
+      try {
+        setLibrary(new LibraryService(libraryPath))
+      } catch (e) {
+        console.error('[library] Failed to open library:', e)
+      }
+    }
 
     return libraryPath
   })
+
+  ipcMain.handle('settings:initLibrary', () => {
+    const path = settings.get('libraryPath')
+    if (!path) return false
+    try {
+      const lib = new LibraryService(path)
+      setLibrary(lib)
+      return true
+    } catch (e) {
+      console.error('[library] initLibrary failed:', e)
+      return false
+    }
+  })
+
+  ipcMain.handle('settings:isLibraryValid', () => getLibrary() !== null)
+
 
   ipcMain.handle('app:getMemoryMB', () => {
     const total = app.getAppMetrics().reduce((sum, m) => sum + m.memory.workingSetSize, 0)
@@ -73,7 +114,9 @@ export function registerIpcHandlers({ settings, getLibrary, setLibrary, download
   ipcMain.handle('library:readAudioFile', (_, id: number): Buffer | null => {
     const library = getLibrary()
     if (!library) { console.error('[readAudioFile] no library'); return null }
-    const filePath = library.filePath(id)
+    const track = library.getTrack(id)
+    if (!track) { console.error(`[readAudioFile] track not found id=${id}`); return null }
+    const filePath = library.filePath(id, track.filename)
     try {
       const buf = readFileSync(filePath)
       console.log(`[readAudioFile] id=${id} path=${filePath} size=${buf.byteLength}`)

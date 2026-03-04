@@ -17,7 +17,13 @@ const api = {
       ipcRenderer.invoke('settings:set', key, value),
 
     selectLibraryPath: (): Promise<string | null> =>
-      ipcRenderer.invoke('settings:selectLibraryPath')
+      ipcRenderer.invoke('settings:selectLibraryPath'),
+
+    isLibraryValid: (): Promise<boolean> =>
+      ipcRenderer.invoke('settings:isLibraryValid'),
+
+    initLibrary: (): Promise<boolean> =>
+      ipcRenderer.invoke('settings:initLibrary')
   },
 
   library: {

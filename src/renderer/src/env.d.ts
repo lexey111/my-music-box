@@ -84,6 +84,8 @@ declare global {
           value: AppSettings[K]
         ) => Promise<AppSettings>
         selectLibraryPath: () => Promise<string | null>
+        isLibraryValid: () => Promise<boolean>
+        initLibrary: () => Promise<boolean>
       }
       library: {
         getTracks: (search?: string) => Promise<Track[]>
