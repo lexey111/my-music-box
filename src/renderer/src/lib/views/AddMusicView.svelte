@@ -32,6 +32,7 @@
 
   let query = get(searchInput)
   let lastQuery = get(searchLastQuery)
+  let cookiesHelpOpen = false
 
   $: libraryUrls = new Set($tracks.filter((t) => t.status === 'ok').map((t) => t.source_url).filter(Boolean) as string[])
 
@@ -142,6 +143,7 @@
             <path d="M1 1l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </span>
+        <button class="help-btn" on:click={() => (cookiesHelpOpen = true)} title="What is this?">?</button>
       </label>
     </div>
 
@@ -275,6 +277,30 @@
             {/each}
           </tbody>
         </table>
+      </div>
+    </div>
+  {/if}
+
+  {#if cookiesHelpOpen}
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <div class="modal-backdrop" on:click={() => (cookiesHelpOpen = false)} on:keydown={(e) => e.key === 'Escape' && (cookiesHelpOpen = false)}>
+      <div class="modal-card" on:click|stopPropagation role="dialog" tabindex="-1">
+        <div class="modal-header">
+          <h3>About Cookies</h3>
+          <button class="modal-close" on:click={() => (cookiesHelpOpen = false)}>
+            <svg width="10" height="10" viewBox="0 0 9 9" fill="none">
+              <path d="M1 1l7 7M8 1L1 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>YouTube limits downloads by bots. Passing your browser's cookies to yt-dlp lets it act as a logged-in user and bypass these restrictions.</p>
+          <p><strong>Before searching or downloading:</strong> open the selected browser and make sure you are logged in to YouTube.</p>
+          <p>Choose <em>No cookies</em> if you don't need this or if yt-dlp works without it for your use case.</p>
+        </div>
+        <div class="modal-footer">
+          <button on:click={() => (cookiesHelpOpen = false)}>Close</button>
+        </div>
       </div>
     </div>
   {/if}
@@ -655,6 +681,96 @@
     background: #22c55e1a;
     color: #4ade80;
     border-color: #22c55e33;
+  }
+
+  /* ── Help button ─────────────────────────────────────────────────────── */
+
+  .help-btn {
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid var(--button-border);
+    background: none;
+    color: var(--fg-muted);
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .help-btn:hover { background: var(--bg-hover); color: var(--fg); }
+
+  /* ── Modal ───────────────────────────────────────────────────────────── */
+
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    width: 340px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--separator);
+  }
+
+  .modal-header h3 {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .modal-close {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--fg-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+  }
+  .modal-close:hover { background: var(--bg-hover); color: var(--fg); }
+
+  .modal-body {
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--fg);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .modal-body p { margin: 0; }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px 16px 14px;
+    border-top: 1px solid var(--separator);
   }
 
   /* ── Empty state ─────────────────────────────────────────────────────── */
