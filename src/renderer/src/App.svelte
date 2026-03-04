@@ -1,6 +1,11 @@
 <script lang="ts">
     import {onMount} from 'svelte'
-    import {fly} from 'svelte/transition'
+    function slideIn(_node: Element, { y = -1, duration = 100 }: { y?: number; duration?: number } = {}) {
+        return {
+            duration,
+            css: (t: number) => `transform: translateY(${(1 - t) * y}px)`
+        }
+    }
     import LibraryView from './lib/views/LibraryView.svelte'
     import AddMusicView from './lib/views/AddMusicView.svelte'
     import ImportMusicView from './lib/views/ImportMusicView.svelte'
@@ -196,7 +201,7 @@
         <!-- ── Content area ─────────────────────────────────────────────────── -->
         <div class="content-area">
             {#key $activeTab}
-                <div class="tab-panel" in:fly={{ y: 2, duration: 100 }}>
+                <div class="tab-panel" in:slideIn>
                     {#if $activeTab === 'addMusic'}
                         <AddMusicView/>
                     {:else if $activeTab === 'importMusic'}
