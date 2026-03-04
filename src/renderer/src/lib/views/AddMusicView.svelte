@@ -129,14 +129,19 @@
       </button>
       <label class="browser-label" title="Browser whose cookies yt-dlp will use to bypass bot detection">
         Cookies:
-        <select
-          value={$settings.cookiesBrowser}
-          on:change={(e) => setSetting('cookiesBrowser', (e.target as HTMLSelectElement).value as CookiesBrowser)}
-        >
-          {#each browserOptions as opt}
-            <option value={opt.value}>{opt.label}</option>
-          {/each}
-        </select>
+        <span class="select-wrap">
+          <select
+            value={$settings.cookiesBrowser}
+            on:change={(e) => setSetting('cookiesBrowser', (e.target as HTMLSelectElement).value as CookiesBrowser)}
+          >
+            {#each browserOptions as opt}
+              <option value={opt.value}>{opt.label}</option>
+            {/each}
+          </select>
+          <svg class="select-chevron" width="8" height="5" viewBox="0 0 8 5" fill="none" aria-hidden="true" pointer-events="none">
+            <path d="M1 1l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
       </label>
     </div>
 
@@ -174,6 +179,9 @@
             <span class="col-n">{i + 1}</span>
             <span class="col-title">
               <span class="title-text" title={result.title}>{result.title}</span>
+              {#if status === 'library'}
+                <span class="dup-badge">✓ In Library</span>
+              {/if}
             </span>
             <span class="col-channel" title={result.uploader ?? ''}>{result.uploader ?? '—'}</span>
             <span class="col-dur">{formatDuration(result.duration)}</span>
@@ -378,8 +386,24 @@
     white-space: nowrap;
   }
 
+  .select-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+
   .browser-label select {
     font-size: 11px;
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 20px;
+  }
+
+  .select-chevron {
+    position: absolute;
+    right: 6px;
+    pointer-events: none;
+    color: var(--fg-muted);
   }
 
   /* ── Results label (outside scroll) ─────────────────────────────────── */
@@ -444,6 +468,7 @@
 
   .result-row .col-title,
   .header-row .col-title  { flex: 1; min-width: 0; max-width: none; width: auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 8px; }
+  .result-row .col-title  { display: flex; align-items: center; gap: 6px; }
 
   .result-row .col-channel,
   .header-row .col-channel { width: 280px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg-muted); }
@@ -463,7 +488,8 @@
   }
 
   .result-row .title-text {
-    display: block;
+    flex: 1;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -609,6 +635,27 @@
   .row-done .progress-fill { background: #22c55e; }
   .row-error .col-error     { padding-left: 8px; }
 
+
+  /* ── "In Library" badge ─────────────────────────────────────────────── */
+
+  .dup-badge {
+    display: inline-block;
+    flex-shrink: 0;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: #16a34a22;
+    color: #16a34a;
+    border: 1px solid #16a34a44;
+    white-space: nowrap;
+  }
+
+  :global([data-theme='dark']) .dup-badge {
+    background: #22c55e1a;
+    color: #4ade80;
+    border-color: #22c55e33;
+  }
 
   /* ── Empty state ─────────────────────────────────────────────────────── */
 

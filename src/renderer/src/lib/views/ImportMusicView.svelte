@@ -100,6 +100,12 @@
         }
     }
 
+    function onDragLeave(e: DragEvent): void {
+        if (!(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)) {
+            dragging = false
+        }
+    }
+
     async function handleDrop(e: DragEvent): Promise<void> {
         dragging = false
         const files = Array.from(e.dataTransfer?.files ?? [])
@@ -205,7 +211,18 @@
         })
 </script>
 
-<div class="import-view">
+<div
+    class="import-view"
+    on:dragover|preventDefault={() => (dragging = true)}
+    on:dragleave={onDragLeave}
+    on:drop|preventDefault={handleDrop}
+>
+
+    {#if dragging && $importFiles.length > 0 && !importing && !$importJobResult}
+        <div class="drag-overlay">
+            <span class="drag-overlay-label">Drop to add more files</span>
+        </div>
+    {/if}
 
     {#if $importFiles.length === 0 && !importing && !$importJobResult}
         <!-- ── Empty / drop zone ──────────────────────────────────────────── -->
@@ -213,9 +230,6 @@
         <div
             class="drop-zone"
             class:drag-over={dragging}
-            on:dragover|preventDefault={() => (dragging = true)}
-            on:dragleave={() => (dragging = false)}
-            on:drop|preventDefault={handleDrop}
         >
             {#if scanning}
                 <p class="drop-hint">Scanning…</p>
@@ -327,7 +341,7 @@
                             <span class="col-title">
                                 <span class="title-text" title={file.title}>{file.title}</span>
                                 {#if $importDuplicates.has(i)}
-                                    <span class="dup-badge">Already in library</span>
+                                    <span class="dup-badge">✓ In Library</span>
                                 {/if}
                             </span>
                             <span class="col-artist">{file.artist ?? '—'}</span>
@@ -401,10 +415,31 @@
 
 <style>
     .import-view {
+        position: relative;
         display: flex;
         flex-direction: column;
         height: 100%;
         overflow: hidden;
+    }
+
+    .drag-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-selected);
+        outline: 2px dashed var(--accent);
+        outline-offset: -12px;
+        border-radius: 4px;
+        pointer-events: none;
+    }
+
+    .drag-overlay-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--accent);
     }
 
     /* ── Empty / drag-drop zone ──────────────────────────────────── */
