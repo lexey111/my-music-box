@@ -14,6 +14,14 @@ The main use case is a car stereo (or any device) that plays audio from a USB dr
 - Detect missing files and re-download them if needed
 - Sync check to reconcile the catalogue against files on disk
 
+## Download
+
+**[Download for macOS (Apple Silicon)](https://github.com/lexey111/my-music-box/releases/latest/download/My.Music.Box-0.1.0-arm64.dmg)**
+
+Or see all releases on the [Releases page](https://github.com/lexey111/my-music-box/releases).
+
+> macOS may show a security warning since the app is not notarized. To open it: right-click the app → Open → Open.
+
 ## Requirements
 
 - macOS (Apple Silicon or Intel)
