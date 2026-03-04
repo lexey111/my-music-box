@@ -19,6 +19,7 @@
     dismissJob
   } from '../stores/downloads'
   import { settings, setSetting, tracks } from '../stores/app'
+  import logoSvg from '../../../../../assets/MyMusicBox-logo.svg?raw'
   import Spinner from '../components/Spinner.svelte'
 
   const browserOptions: Array<{ value: CookiesBrowser; label: string }> = [
@@ -215,11 +216,12 @@
 
     <!-- ── Empty state ─────────────────────────────────────────────────────── -->
     {#if !$searchError && $searchResults.length === 0}
-      <div class="empty">
+      <div class="empty" class:empty--logo={!$searching}>
         {#if $searching}
           Searching for "{query}"…
         {:else}
-          Search YouTube to find music to add to your library.
+          <div class="empty-logo" aria-hidden="true">{@html logoSvg}</div>
+          <p class="empty-hint">Search YouTube to find music to add to your library.</p>
         {/if}
       </div>
     {/if}
@@ -782,5 +784,25 @@
     justify-content: center;
     color: var(--fg-muted);
     font-size: 13px;
+  }
+
+  .empty--logo {
+    flex-direction: column;
+    gap: 16px;
+    padding-bottom: 20px;
+  }
+
+  .empty-logo :global(svg) {
+    max-width: 280px;
+    width: 100%;
+    height: auto;
+    opacity: 0.85;
+    display: block;
+  }
+
+  .empty-hint {
+    font-size: 13px;
+    color: var(--fg-muted);
+    margin: 0;
   }
 </style>

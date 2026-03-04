@@ -211,7 +211,7 @@
                 </div>
             {/if}
 
-            {#if $activeTab === 'library'}
+            {#if $activeTab === 'library' && $tracks.length > 0}
                 <PlayerIsland {isMini} onToggleMini={toggleMiniMode}/>
             {/if}
 

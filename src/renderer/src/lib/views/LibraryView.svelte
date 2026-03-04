@@ -14,6 +14,7 @@
     activeTab
   } from '../stores/app'
   import { redownloadTrack } from '../stores/downloads'
+  import logoSvg from '../../../../../assets/MyMusicBox-logo.svg?raw'
   import { player, playTrack, togglePlay } from '../stores/player'
 
   function handleRedownload(track: Track): void {
@@ -92,9 +93,24 @@
   function handleRowClick(e: MouseEvent, id: number): void {
     toggleSelect(id)
   }
+
+  $: isEmpty = !$loading && !$search && $tracks.length === 0
 </script>
 
 <div class="library">
+  {#if isEmpty}
+    <!-- ── Empty splash ─────────────────────────────────────────────────── -->
+    <div class="splash">
+      <div class="splash-logo" aria-hidden="true">{@html logoSvg}</div>
+      <p class="splash-hint">
+        Use <!-- svelte-ignore a11y-invalid-attribute -->
+        <a href="#" class="link-btn" on:click|preventDefault={() => ($activeTab = 'addMusic')}>Find Music</a>
+        or <!-- svelte-ignore a11y-invalid-attribute -->
+        <a href="#" class="link-btn" on:click|preventDefault={() => ($activeTab = 'importMusic')}>Import Music</a>
+        to add tracks.
+      </p>
+    </div>
+  {:else}
   <!-- ── Toolbar ─────────────────────────────────────────────────────────── -->
   <div class="toolbar">
     <input
@@ -167,9 +183,7 @@
     {#if $loading}
       <div class="empty">Loading…</div>
     {:else if $tracks.length === 0}
-      <div class="empty">
-        {$search ? 'No tracks match your search.' : 'No tracks yet. Download some music!'}
-      </div>
+      <div class="empty">No tracks match your search.</div>
     {:else if virtualizer}
       <div style="height: {$virtualizer.getTotalSize()}px; position: relative">
         {#each $virtualizer.getVirtualItems() as row (row.index)}
@@ -247,6 +261,7 @@
       </div>
     {/if}
   </div>
+  {/if}
 
 </div>
 
@@ -334,6 +349,8 @@
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
   }
 
   /* ── Track rows ─────────────────────────────────────────────────────────── */
@@ -463,7 +480,7 @@
     transition: stroke-dashoffset 0.25s linear;
   }
 
-  /* ── Empty state ────────────────────────────────────────────────────────── */
+  /* ── Empty state (search no-results) ───────────────────────────────────── */
 
   .empty {
     display: flex;
@@ -472,6 +489,43 @@
     height: 120px;
     color: var(--fg-muted);
     font-size: 13px;
+  }
+
+  /* ── Splash (truly empty library) ───────────────────────────────────────── */
+
+  .splash {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding-top: var(--toolbar-height);
+    padding-bottom: 20px;
+  }
+
+  .splash-logo :global(svg) {
+    max-width: 280px;
+    width: 100%;
+    height: auto;
+    opacity: 0.85;
+    display: block;
+  }
+
+  .splash-hint {
+    font-size: 13px;
+    color: var(--fg-muted);
+    margin: 0;
+  }
+
+  .link-btn {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .link-btn:hover {
+    opacity: 0.75;
   }
 
 </style>
