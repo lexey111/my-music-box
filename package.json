@@ -1,7 +1,7 @@
 {
   "name": "my-music-box",
   "productName": "My Music Box",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Local music player and collection manager",
   "main": "out/main/index.js",
   "scripts": {
