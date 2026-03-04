@@ -242,7 +242,7 @@
             <div class="statusbar">
                 <span class="statusbar-path">{$libraryPath ?? ''}</span>&middot;
                 <!-- svelte-ignore a11y-invalid-attribute -->
-                <a class="statusbar-link" class:disabled={!!$activeImportJob} href="#" on:click|preventDefault={() => { if (!$activeImportJob) $activeTab = 'settings' }}>
+                <a class="statusbar-link" class:disabled={!!$activeImportJob} href="#" on:click|preventDefault={() => { if (!$activeImportJob) selectLibraryPath() }}>
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
                         <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
