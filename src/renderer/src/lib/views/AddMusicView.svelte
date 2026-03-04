@@ -286,10 +286,10 @@
   {#if cookiesHelpOpen}
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class="modal-backdrop" on:click={() => (cookiesHelpOpen = false)} on:keydown={(e) => e.key === 'Escape' && (cookiesHelpOpen = false)}>
-      <div class="modal-card" on:click|stopPropagation role="dialog" tabindex="-1">
+      <div class="modal-card" on:click|stopPropagation on:keydown|stopPropagation role="dialog" tabindex="-1">
         <div class="modal-header">
           <h3>About Cookies</h3>
-          <button class="modal-close" on:click={() => (cookiesHelpOpen = false)}>
+          <button class="modal-close" aria-label="Close" on:click={() => (cookiesHelpOpen = false)}>
             <svg width="10" height="10" viewBox="0 0 9 9" fill="none">
               <path d="M1 1l7 7M8 1L1 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
@@ -613,7 +613,6 @@
   /* ── Column widths ───────────────────────────────────────────────────── */
 
   .col-n        { width: 24px; }
-  .data-table .col-n { padding-left: 24px; text-align: center; }
   .col-title    { max-width: 0; width: 100%; }
   .col-channel  { width: 280px; min-width: 280px; }
   .col-dur      { width: 60px; text-align: right; }

@@ -213,6 +213,7 @@
 
 <div
     class="import-view"
+    role="region"
     on:dragover|preventDefault={() => (dragging = true)}
     on:dragleave={onDragLeave}
     on:drop|preventDefault={handleDrop}

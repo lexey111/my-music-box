@@ -97,14 +97,14 @@ function createWindow(backgroundColor = '#e8e8e8'): void {
   }
 }
 
-if (process.platform === 'darwin' && app.dock) {
-  const iconPath = app.isPackaged
-    ? join(process.resourcesPath, 'icon.png')
-    : join(__dirname, '../../resources/icon.png')
-  app.dock.setIcon(iconPath)
-}
-
 app.whenReady().then(() => {
+  if (process.platform === 'darwin' && app.dock) {
+    const iconPath = app.isPackaged
+      ? join(process.resourcesPath, 'icon.png')
+      : join(__dirname, '../../resources/icon.png')
+    app.dock.setIcon(iconPath)
+  }
+
   electronApp.setAppUserModelId('com.musicbox.app')
 
   app.on('browser-window-created', (_, window) => {

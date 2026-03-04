@@ -33,6 +33,7 @@
     setVolume(volume)
   }
 
+  $: isIdle = $player.mode === 'idle'
   $: progress = $player.duration > 0 ? ($player.currentTime / $player.duration) * 100 : 0
   $: queueActive = $player.mode === 'queue'
   $: trackLabel = $player.currentTrack
@@ -42,7 +43,7 @@
       : 'No track — click Play All or any track to start'
 </script>
 
-<div class="player-island" class:wide={isWide} class:compact={isCompact} class:ultra={isUltraCompact} class:stacked={isStackedVolume} class:mini={isMini} bind:clientWidth={islandWidth}>
+<div class="player-island" class:wide={isWide} class:compact={isCompact} class:ultra={isUltraCompact} class:stacked={isStackedVolume} class:mini={isMini} class:idle={isIdle} bind:clientWidth={islandWidth}>
 
   <div class="controls">
     <button class="btn-play-all" on:click={() => playAll($tracks)}>
@@ -55,6 +56,7 @@
       </svg>
       Play All
     </button>
+    {#if !isIdle}
     <div class="transport">
       <button class="transport-btn" disabled={!queueActive} on:click={playPrev} title="Previous">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -90,10 +92,12 @@
         </svg>
       </button>
     </div>
+    {/if}
   </div>
 
   <span class="track-label" title={trackLabel}>{trackLabel}</span>
 
+  {#if !isIdle}
   <div class="scrubber-row">
     <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
     <div class="progress-bar" on:click={handleProgressClick}>
@@ -115,6 +119,7 @@
       title="Volume"
     />
   </div>
+  {/if}
 
   <button class="btn-mini-toggle" on:click={onToggleMini} title={isMini ? 'Expand' : 'Mini player'}>
     {#if isMini}
@@ -239,6 +244,7 @@
   .wide .track-label { flex: 0 1 120px; }
   .wide .scrubber-row { flex: 1; min-width: 0; }
   .wide .btn-mini-toggle { flex-shrink: 0; }
+  .wide.idle .track-label { flex: 1; }
 
   /* ── Mini mode ────────────────────────────────────────────────────────────── */
 

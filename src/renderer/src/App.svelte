@@ -1,5 +1,6 @@
 <script lang="ts">
     import {onMount} from 'svelte'
+    import {fly} from 'svelte/transition'
     import LibraryView from './lib/views/LibraryView.svelte'
     import AddMusicView from './lib/views/AddMusicView.svelte'
     import ImportMusicView from './lib/views/ImportMusicView.svelte'
@@ -194,21 +195,25 @@
 
         <!-- ── Content area ─────────────────────────────────────────────────── -->
         <div class="content-area">
-            {#if $activeTab === 'addMusic'}
-                <AddMusicView/>
-            {:else if $activeTab === 'importMusic'}
-                <div class="content-island">
-                    <ImportMusicView/>
-                </div>
-            {:else}
-                <div class="content-island">
-                    {#if $activeTab === 'library'}
-                        <LibraryView/>
+            {#key $activeTab}
+                <div class="tab-panel" in:fly={{ y: 2, duration: 100 }}>
+                    {#if $activeTab === 'addMusic'}
+                        <AddMusicView/>
+                    {:else if $activeTab === 'importMusic'}
+                        <div class="content-island">
+                            <ImportMusicView/>
+                        </div>
                     {:else}
-                        <SettingsView/>
+                        <div class="content-island">
+                            {#if $activeTab === 'library'}
+                                <LibraryView/>
+                            {:else}
+                                <SettingsView/>
+                            {/if}
+                        </div>
                     {/if}
                 </div>
-            {/if}
+            {/key}
 
             {#if $activeTab === 'library' && $tracks.length > 0}
                 <PlayerIsland {isMini} onToggleMini={toggleMiniMode}/>
@@ -341,6 +346,16 @@
         overflow: hidden;
     }
 
+    /* ── Tab panel (fade wrapper) ────────────────────────────────────────── */
+
+    .tab-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        min-height: 0;
+    }
+
     /* ── Content island ──────────────────────────────────────────────────── */
 
     .content-island {
@@ -368,7 +383,7 @@
         border: none;
         border-bottom: 2px solid transparent;
         box-shadow: none;
-        transition: color 0.1s;
+        transition: color 0.1s, border-bottom-color 0.1s;
     }
 
     .tab:hover,

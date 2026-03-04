@@ -1,5 +1,6 @@
 {
   "name": "my-music-box",
+  "productName": "My Music Box",
   "version": "0.1.0",
   "description": "Local music player and collection manager",
   "main": "out/main/index.js",
@@ -7,7 +8,7 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "package": "electron-vite build && electron-builder",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps && node scripts/patch-electron-dev.js"
   },
   "dependencies": {
     "better-sqlite3": "^12.6.2"
