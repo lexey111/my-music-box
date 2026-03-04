@@ -98,6 +98,17 @@
     <section>
       <h2>System</h2>
       <div class="row">
+        <span class="label">Quit on close</span>
+        <label class="toggle">
+          <input
+            type="checkbox"
+            checked={$settings.quitOnClose}
+            on:change={(e) => setSetting('quitOnClose', (e.target as HTMLInputElement).checked)}
+          />
+          <span class="track"><span class="thumb"></span></span>
+        </label>
+      </div>
+      <div class="row">
         <span class="label">Memory</span>
         <span class="muted">{memMB || '…'}</span>
       </div>

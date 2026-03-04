@@ -13,6 +13,7 @@ export interface AppSettings {
   crossfade: boolean
   crossfadeDuration: number
   searchResultCount: number
+  quitOnClose: boolean
 }
 
 const defaults: AppSettings = {
@@ -24,7 +25,8 @@ const defaults: AppSettings = {
   cookiesBrowser: 'safari',
   crossfade: false,
   crossfadeDuration: 3,
-  searchResultCount: 5
+  searchResultCount: 5,
+  quitOnClose: false
 }
 
 export class SettingsService {

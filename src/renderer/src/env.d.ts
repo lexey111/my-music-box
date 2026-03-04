@@ -15,6 +15,7 @@ interface AppSettings {
   crossfade: boolean
   crossfadeDuration: number
   searchResultCount: number
+  quitOnClose: boolean
 }
 
 interface Track {

@@ -25,6 +25,7 @@ interface WindowState {
 
 let mainWindow: BrowserWindow | null = null
 let library: LibraryService | null = null
+let settings: SettingsService | null = null
 let isMiniMode = false
 let isMiniTransitioning = false
 let pendingTransitionHeight: number | null = null
@@ -117,7 +118,7 @@ app.whenReady().then(() => {
     try { windowState = JSON.parse(readFileSync(windowStateFilePath, 'utf-8')) } catch { windowState = {} }
   }
 
-  const settings = new SettingsService(userDataPath)
+  settings = new SettingsService(userDataPath)
   const downloadService = new DownloadService()
   const importService = new ImportService()
 
@@ -217,7 +218,7 @@ app.whenReady().then(() => {
 })
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit()
+  if (process.platform !== 'darwin' || settings?.get('quitOnClose')) app.quit()
 })
 
 app.on('before-quit', () => {
