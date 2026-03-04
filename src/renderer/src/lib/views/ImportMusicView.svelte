@@ -197,6 +197,29 @@
         progressListEl.querySelector('.processing')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
     }
 
+    // ── Title column resize ────────────────────────────────────────────────────
+
+    let containerWidth = 0
+    const FIXED_COLS = 386 // 32+180+70+80+24
+
+    let userTitleWidth: number | null = null
+    $: maxTitleWidth = Math.max(150, containerWidth - FIXED_COLS)
+    $: titleWidth = Math.max(150, Math.min(userTitleWidth ?? maxTitleWidth, maxTitleWidth))
+
+    function startResize(e: MouseEvent): void {
+        const startX = e.clientX
+        const startW = titleWidth
+        function onMove(ev: MouseEvent): void {
+            userTitleWidth = Math.max(150, Math.min(startW + (ev.clientX - startX), maxTitleWidth))
+        }
+        function onUp(): void {
+            window.removeEventListener('mousemove', onMove)
+            window.removeEventListener('mouseup', onUp)
+        }
+        window.addEventListener('mousemove', onMove)
+        window.addEventListener('mouseup', onUp)
+    }
+
     // ── Sort ──────────────────────────────────────────────────────────────────
 
     type SortField = 'title' | 'artist'
@@ -239,6 +262,8 @@
 <div
     class="import-view"
     role="region"
+    bind:clientWidth={containerWidth}
+    style="--title-w: {titleWidth}px"
     on:dragover|preventDefault={() => (dragging = true)}
     on:dragleave={onDragLeave}
     on:drop|preventDefault={handleDrop}
@@ -337,6 +362,8 @@
             <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
             <span class="col-title sort-col" class:sort-active={sortField === 'title'} on:click={() => handleSort('title')}>
                 Title{#if sortField === 'title'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
+                <!-- svelte-ignore a11y-no-static-element-interactions -->
+                <span class="resize-handle" on:mousedown|stopPropagation={startResize}></span>
             </span>
             <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
             <span class="col-artist sort-col" class:sort-active={sortField === 'artist'} on:click={() => handleSort('artist')}>
@@ -621,11 +648,24 @@
 
     /* Columns */
     .col-check    { width: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-    .col-title    { flex: 1; display: flex; align-items: center; gap: 6px; overflow: hidden; padding-right: 12px; }
+    .col-title    { flex: none; width: var(--title-w); min-width: 150px; position: relative; display: flex; align-items: center; gap: 6px; overflow: hidden; padding-right: 12px; }
     .title-text   { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .col-artist   { width: 180px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg-muted); padding-right: 12px; }
     .col-duration { width: 70px; flex-shrink: 0; color: var(--fg-muted); font-variant-numeric: tabular-nums; text-align: right; }
     .col-file     { width: 80px; flex-shrink: 0; color: var(--fg-muted); font-variant-numeric: tabular-nums; text-align: right; }
+
+    .resize-handle {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 5px;
+        cursor: col-resize;
+    }
+    .resize-handle:hover {
+        background: var(--accent);
+        opacity: 0.4;
+    }
 
     .sort-col {
         cursor: pointer;

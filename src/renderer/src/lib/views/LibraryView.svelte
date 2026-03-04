@@ -96,6 +96,29 @@
 
   $: isEmpty = !$loading && !$search && $tracks.length === 0
 
+  // ── Title column resize ────────────────────────────────────────────────────
+
+  let containerWidth = 0
+  const FIXED_COLS = 536 // 28+20+180+64+72+148+24
+
+  let userTitleWidth: number | null = null
+  $: maxTitleWidth = Math.max(150, containerWidth - FIXED_COLS)
+  $: titleWidth = Math.max(150, Math.min(userTitleWidth ?? maxTitleWidth, maxTitleWidth))
+
+  function startResize(e: MouseEvent): void {
+    const startX = e.clientX
+    const startW = titleWidth
+    function onMove(ev: MouseEvent): void {
+      userTitleWidth = Math.max(150, Math.min(startW + (ev.clientX - startX), maxTitleWidth))
+    }
+    function onUp(): void {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }
+
   // ── Sort ───────────────────────────────────────────────────────────────────
 
   type SortField = 'title' | 'artist'
@@ -120,7 +143,7 @@
     : $tracks
 </script>
 
-<div class="library">
+<div class="library" bind:clientWidth={containerWidth} style="--title-w: {titleWidth}px">
   {#if isEmpty}
     <!-- ── Empty splash ─────────────────────────────────────────────────── -->
     <div class="splash">
@@ -197,6 +220,8 @@
     <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
     <span class="col-title sort-col" class:sort-active={sortField === 'title'} on:click={() => handleSort('title')}>
       Title{#if sortField === 'title'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <span class="resize-handle" on:mousedown|stopPropagation={startResize}></span>
     </span>
     <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
     <span class="col-artist sort-col" class:sort-active={sortField === 'artist'} on:click={() => handleSort('artist')}>
@@ -414,7 +439,7 @@
 
   .col-check  { width: 28px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
   .col-status { width: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-  .col-title  { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 12px; }
+  .col-title  { flex: none; width: var(--title-w); min-width: 150px; position: relative; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 12px; }
   .col-artist { width: 180px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg-muted); padding-right: 12px; }
   .col-duration { width: 64px; flex-shrink: 0; color: var(--fg-muted); font-variant-numeric: tabular-nums; display: flex; align-items: center; justify-content: flex-end; }
   .col-size   { width: 72px; flex-shrink: 0; color: var(--fg-muted); text-align: right; font-variant-numeric: tabular-nums; }
@@ -507,6 +532,19 @@
     stroke-width: 2;
     stroke-linecap: round;
     transition: stroke-dashoffset 0.25s linear;
+  }
+
+  .resize-handle {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    cursor: col-resize;
+  }
+  .resize-handle:hover {
+    background: var(--accent);
+    opacity: 0.4;
   }
 
   .sort-col {
