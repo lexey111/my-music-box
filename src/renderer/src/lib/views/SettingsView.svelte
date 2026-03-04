@@ -1,21 +1,7 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte'
   import { settings, setSetting, selectLibraryPath } from '../stores/app'
 
-  let memMB = ''
-  let memTimer: ReturnType<typeof setInterval>
 
-  onMount(() => {
-    updateMem()
-    memTimer = setInterval(updateMem, 3000)
-  })
-
-  onDestroy(() => clearInterval(memTimer))
-
-  async function updateMem(): Promise<void> {
-    const mb = await window.api.app.getMemoryMB()
-    memMB = `${mb} MB`
-  }
 </script>
 
 <div class="settings">
@@ -107,10 +93,6 @@
           />
           <span class="track"><span class="thumb"></span></span>
         </label>
-      </div>
-      <div class="row">
-        <span class="label">Memory</span>
-        <span class="muted">{memMB || '…'}</span>
       </div>
     </section>
 
