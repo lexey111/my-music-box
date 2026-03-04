@@ -1,4 +1,6 @@
-# my-music-box
+<p align="center">
+  <img src="assets/MyMusicBox-logo.svg" width="340" alt="My Music Box">
+</p>
 
 A personal desktop app for building and managing a flat-file music collection — built with Electron + Svelte.
 
