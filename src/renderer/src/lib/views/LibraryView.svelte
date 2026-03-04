@@ -30,7 +30,7 @@
   $: virtualizer =
     listEl &&
     createVirtualizer({
-      count: $tracks.length,
+      count: sortedTracks.length,
       getScrollElement: () => listEl!,
       estimateSize: () => 40,
       overscan: 20
@@ -95,6 +95,29 @@
   }
 
   $: isEmpty = !$loading && !$search && $tracks.length === 0
+
+  // ── Sort ───────────────────────────────────────────────────────────────────
+
+  type SortField = 'title' | 'artist'
+  let sortField: SortField | null = null
+  let sortDir: 'asc' | 'desc' | 'none' = 'none'
+
+  function handleSort(field: SortField): void {
+    if (sortField !== field) {
+      sortField = field; sortDir = 'asc'
+    } else {
+      sortDir = sortDir === 'none' ? 'asc' : sortDir === 'asc' ? 'desc' : 'none'
+      if (sortDir === 'none') sortField = null
+    }
+  }
+
+  $: sortedTracks = (sortField && sortDir !== 'none')
+    ? [...$tracks].sort((a, b) => {
+        const av = (a[sortField!] ?? '').toLowerCase()
+        const bv = (b[sortField!] ?? '').toLowerCase()
+        return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av)
+      })
+    : $tracks
 </script>
 
 <div class="library">
@@ -171,8 +194,14 @@
   <div class="header-row">
     <span class="col-check"></span>
     <span class="col-status"></span>
-    <span class="col-title">Title</span>
-    <span class="col-artist">Artist</span>
+    <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+    <span class="col-title sort-col" class:sort-active={sortField === 'title'} on:click={() => handleSort('title')}>
+      Title{#if sortField === 'title'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
+    </span>
+    <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+    <span class="col-artist sort-col" class:sort-active={sortField === 'artist'} on:click={() => handleSort('artist')}>
+      Artist{#if sortField === 'artist'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
+    </span>
     <span class="col-duration">Duration</span>
     <span class="col-size">Size</span>
     <span class="col-action"></span>
@@ -187,7 +216,7 @@
     {:else if virtualizer}
       <div style="height: {$virtualizer.getTotalSize()}px; position: relative">
         {#each $virtualizer.getVirtualItems() as row (row.index)}
-          {@const track = $tracks[row.index]}
+          {@const track = sortedTracks[row.index]}
           {@const isSelected = $selectedIds.has(track.id)}
           <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
           <div
@@ -478,6 +507,22 @@
     stroke-width: 2;
     stroke-linecap: round;
     transition: stroke-dashoffset 0.25s linear;
+  }
+
+  .sort-col {
+    cursor: pointer;
+    user-select: none;
+  }
+  .sort-col:hover {
+    color: var(--fg);
+  }
+  .sort-active {
+    color: var(--fg);
+  }
+  .sort-arrow {
+    margin-left: 3px;
+    font-size: 10px;
+    color: var(--accent);
   }
 
   /* ── Empty state (search no-results) ───────────────────────────────────── */

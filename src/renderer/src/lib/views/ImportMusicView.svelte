@@ -197,6 +197,31 @@
         progressListEl.querySelector('.processing')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
     }
 
+    // ── Sort ──────────────────────────────────────────────────────────────────
+
+    type SortField = 'title' | 'artist'
+    let sortField: SortField | null = null
+    let sortDir: 'asc' | 'desc' | 'none' = 'none'
+
+    function handleSort(field: SortField): void {
+        if (sortField !== field) {
+            sortField = field; sortDir = 'asc'
+        } else {
+            sortDir = sortDir === 'none' ? 'asc' : sortDir === 'asc' ? 'desc' : 'none'
+            if (sortDir === 'none') sortField = null
+        }
+    }
+
+    $: sortedItems = (sortField && sortDir !== 'none')
+        ? $importFiles
+            .map((file, i) => ({ i, file }))
+            .sort((a, b) => {
+                const av = (a.file[sortField!] ?? '').toLowerCase()
+                const bv = (b.file[sortField!] ?? '').toLowerCase()
+                return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av)
+            })
+        : $importFiles.map((file, i) => ({ i, file }))
+
     // ── Virtual list ──────────────────────────────────────────────────────────
 
     let listEl: HTMLDivElement | undefined
@@ -204,7 +229,7 @@
     $: virtualizer =
         listEl &&
         createVirtualizer({
-            count: $importFiles.length,
+            count: sortedItems.length,
             getScrollElement: () => listEl!,
             estimateSize: () => 40,
             overscan: 10
@@ -309,8 +334,14 @@
                     on:change={toggleAll}
                 />
             </span>
-            <span class="col-title">Title</span>
-            <span class="col-artist">Artist</span>
+            <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+            <span class="col-title sort-col" class:sort-active={sortField === 'title'} on:click={() => handleSort('title')}>
+                Title{#if sortField === 'title'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
+            </span>
+            <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+            <span class="col-artist sort-col" class:sort-active={sortField === 'artist'} on:click={() => handleSort('artist')}>
+                Artist{#if sortField === 'artist'}<span class="sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}
+            </span>
             <span class="col-duration">Duration</span>
             <span class="col-file">File</span>
         </div>
@@ -320,8 +351,9 @@
             {#if virtualizer}
                 <div style="height: {$virtualizer.getTotalSize()}px; position: relative">
                     {#each $virtualizer.getVirtualItems() as row (row.index)}
-                        {@const file = $importFiles[row.index]}
-                        {@const i = row.index}
+                        {@const item = sortedItems[row.index]}
+                        {@const file = item.file}
+                        {@const i = item.i}
                         <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
                         <div
                             class="import-row"
@@ -594,6 +626,22 @@
     .col-artist   { width: 180px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg-muted); padding-right: 12px; }
     .col-duration { width: 70px; flex-shrink: 0; color: var(--fg-muted); font-variant-numeric: tabular-nums; text-align: right; }
     .col-file     { width: 80px; flex-shrink: 0; color: var(--fg-muted); font-variant-numeric: tabular-nums; text-align: right; }
+
+    .sort-col {
+        cursor: pointer;
+        user-select: none;
+    }
+    .sort-col:hover {
+        color: var(--fg);
+    }
+    .sort-active {
+        color: var(--fg);
+    }
+    .sort-arrow {
+        margin-left: 3px;
+        font-size: 10px;
+        color: var(--accent);
+    }
 
     .dup-badge {
         display: inline-block;
