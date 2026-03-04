@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-40 0 478 200" width="478" height="200">
+  <defs>
+    <radialGradient id="vinylGrad" cx="38%" cy="32%" r="70%">
+      <stop offset="0%"   stop-color="#3a3a3a"/>
+      <stop offset="40%"  stop-color="#1a1a1a"/>
+      <stop offset="100%" stop-color="#0a0a0a"/>
+    </radialGradient>
+    <radialGradient id="vinylSheen" cx="30%" cy="22%" r="55%">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="60%"  stop-color="#ffffff" stop-opacity="0.03"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="labelGrad" cx="35%" cy="30%" r="75%">
+      <stop offset="0%"   stop-color="#4fc3f7"/>
+      <stop offset="35%"  stop-color="#0288d1"/>
+      <stop offset="100%" stop-color="#01579b"/>
+    </radialGradient>
+    <radialGradient id="labelSheen" cx="28%" cy="22%" r="60%">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.35"/>
+      <stop offset="50%"  stop-color="#ffffff" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bottomReflect" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="50%"  stop-color="#ffffff" stop-opacity="0.07"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.13"/>
+    </linearGradient>
+    <linearGradient id="rimHighlight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.65"/>
+      <stop offset="35%"  stop-color="#ffffff" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.0"/>
+    </linearGradient>
+    <linearGradient id="rimHighlight2" x1="100%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.28"/>
+      <stop offset="30%"  stop-color="#ffffff" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.0"/>
+    </linearGradient>
+    <!-- Text gradient: matches label blue -->
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#4fc3f7"/>
+      <stop offset="100%" stop-color="#0288d1"/>
+    </linearGradient>
+
+    <clipPath id="recordClip">
+      <rect x="10" y="10" width="180" height="180" rx="39" ry="39"/>
+    </clipPath>
+    <clipPath id="labelClip">
+      <rect x="58" y="58" width="84" height="84" rx="18" ry="18"/>
+    </clipPath>
+    <!-- Mask to punch spindle hole through label -->
+    <mask id="spindleHole">
+      <rect x="0" y="0" width="200" height="200" fill="white"/>
+      <rect x="96" y="96" width="8" height="8" rx="2" ry="2" fill="black"/>
+    </mask>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="108%">
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#000000" flood-opacity="0.18"/>
+    </filter>
+    <filter id="labelGlow" x="-5%" y="-5%" width="110%" height="110%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="textShadow" x="-2%" y="-5%" width="104%" height="130%">
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#000000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- ── Icon (scaled down to 180×180, offset 10,10) ── -->
+
+  <!-- Record body -->
+  <rect x="10" y="10" width="180" height="180" rx="39" ry="39"
+        fill="url(#vinylGrad)" filter="url(#shadow)" mask="url(#spindleHole)"/>
+
+  <!-- Groove rings -->
+  <g clip-path="url(#recordClip)" opacity="0.55" mask="url(#spindleHole)">
+    <rect x="22" y="22" width="156" height="156" rx="34" ry="34" fill="none" stroke="#2e2e2e" stroke-width="0.8"/>
+    <rect x="28" y="28" width="144" height="144" rx="32" ry="32" fill="none" stroke="#2a2a2a" stroke-width="0.7"/>
+    <rect x="34" y="34" width="132" height="132" rx="30" ry="30" fill="none" stroke="#303030" stroke-width="0.7"/>
+    <rect x="40" y="40" width="120" height="120" rx="28" ry="28" fill="none" stroke="#282828" stroke-width="0.6"/>
+    <rect x="46" y="46" width="108" height="108" rx="26" ry="26" fill="none" stroke="#333333" stroke-width="0.7"/>
+    <rect x="52" y="52" width="96"  height="96"  rx="24" ry="24" fill="none" stroke="#2b2b2b" stroke-width="0.6"/>
+  </g>
+
+  <!-- Vinyl sheen -->
+  <rect x="10" y="10" width="180" height="180" rx="39" ry="39"
+        fill="url(#vinylSheen)"/>
+
+  <!-- Label -->
+  <rect x="58" y="58" width="84" height="84" rx="18" ry="18"
+        fill="url(#labelGrad)" filter="url(#labelGlow)" mask="url(#spindleHole)"/>
+
+  <!-- Label rings -->
+  <g clip-path="url(#labelClip)" opacity="0.3" mask="url(#spindleHole)">
+    <rect x="62" y="62" width="76" height="76" rx="17" ry="17" fill="none" stroke="#ffffff" stroke-width="0.8"/>
+    <rect x="68" y="68" width="64" height="64" rx="15" ry="15" fill="none" stroke="#ffffff" stroke-width="0.6"/>
+    <rect x="74" y="74" width="52" height="52" rx="13" ry="13" fill="none" stroke="#ffffff" stroke-width="0.5"/>
+  </g>
+
+  <!-- Label sheen -->
+  <rect x="58" y="58" width="84" height="84" rx="18" ry="18"
+        fill="url(#labelSheen)" mask="url(#spindleHole)"/>
+
+  <!-- Bottom reflection -->
+  <rect x="10" y="10" width="180" height="180" rx="39" ry="39"
+        fill="url(#bottomReflect)" mask="url(#spindleHole)"/>
+
+  <!-- Rim: bright highlight top-left -->
+  <rect x="10" y="10" width="180" height="180" rx="39" ry="39"
+        fill="none" stroke="url(#rimHighlight)" stroke-width="1.2"/>
+  <!-- Rim: subtle highlight bottom-right -->
+  <rect x="10" y="10" width="180" height="180" rx="39" ry="39"
+        fill="none" stroke="url(#rimHighlight2)" stroke-width="1.2"/>
+
+  <!-- ── Wordmark: 3 rows, aligned to icon (10..190) ── -->
+  <!-- Row 1: "My" — thin, top of icon -->
+  <text x="222" y="52"
+        font-family="'SF Pro Display', 'Helvetica Neue', 'Helvetica', sans-serif"
+        font-size="42"
+        font-weight="300"
+        letter-spacing="1"
+        fill="#999999">My</text>
+
+  <!-- Row 2: "Music" — bold blue, middle -->
+  <text x="222" y="108"
+        font-family="'SF Pro Display', 'Helvetica Neue', 'Helvetica', sans-serif"
+        font-size="52"
+        font-weight="700"
+        letter-spacing="-1"
+        fill="url(#textGrad)">Music</text>
+
+  <!-- Row 3: "Box" — bold dark, bottom -->
+  <text x="222" y="164"
+        font-family="'SF Pro Display', 'Helvetica Neue', 'Helvetica', sans-serif"
+        font-size="52"
+        font-weight="700"
+        letter-spacing="-1"
+        fill="#4a4a4a">Box</text>
+</svg>

@@ -3,7 +3,7 @@
     import { createVirtualizer } from '@tanstack/svelte-virtual'
     import {importFiles, importSelected, importDuplicates, importScanning, activeImportJob, importJobResult} from '../stores/app'
     import Spinner from '../components/Spinner.svelte'
-    import logoUrl from '../../../../../assets/logo.svg?url'
+    import logoSvg from '../../../../../assets/MyMusicBox-logo.svg?raw'
 
     let scanning = false
     let scanProgress = { done: 0, total: 0 }
@@ -240,7 +240,7 @@
                     <Spinner />
                 {/if}
             {:else}
-                <img class="drop-icon" src={logoUrl} alt="My Music Box" aria-hidden="true" />
+                <div class="drop-icon" aria-hidden="true">{@html logoSvg}</div>
                 <p class="drop-hint">
                     Select audio files or a folder to add to the import list.<br>
                     You can also drag and drop files here.
@@ -463,10 +463,12 @@
         outline-color: var(--accent);
     }
 
-    .drop-icon {
-        width: 72px;
-        height: 72px;
+    .drop-icon :global(svg) {
+        max-width: 280px;
+        width: 100%;
+        height: auto;
         opacity: 0.85;
+        display: block;
     }
 
     .drop-hint {

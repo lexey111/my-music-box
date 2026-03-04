@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="vinylGrad" cx="38%" cy="32%" r="70%">
+      <stop offset="0%"   stop-color="#3a3a3a"/>
+      <stop offset="40%"  stop-color="#1a1a1a"/>
+      <stop offset="100%" stop-color="#0a0a0a"/>
+    </radialGradient>
+    <radialGradient id="vinylSheen" cx="30%" cy="22%" r="55%">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="60%"  stop-color="#ffffff" stop-opacity="0.03"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="labelGrad" cx="35%" cy="30%" r="75%">
+      <stop offset="0%"   stop-color="#4fc3f7"/>
+      <stop offset="35%"  stop-color="#0288d1"/>
+      <stop offset="100%" stop-color="#01579b"/>
+    </radialGradient>
+    <radialGradient id="labelSheen" cx="28%" cy="22%" r="60%">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.35"/>
+      <stop offset="50%"  stop-color="#ffffff" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bottomReflect" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="50%"  stop-color="#ffffff" stop-opacity="0.07"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.13"/>
+    </linearGradient>
+    <!-- Rim highlight top-left: bright -->
+    <linearGradient id="rimHighlight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.65"/>
+      <stop offset="35%"  stop-color="#ffffff" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.0"/>
+    </linearGradient>
+    <!-- Rim highlight bottom-right: subtle secondary -->
+    <linearGradient id="rimHighlight2" x1="100%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.28"/>
+      <stop offset="30%"  stop-color="#ffffff" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.0"/>
+    </linearGradient>
+    <clipPath id="recordClip">
+      <rect x="24" y="24" width="464" height="464" rx="100" ry="100"/>
+    </clipPath>
+    <clipPath id="labelClip">
+      <rect x="148" y="148" width="216" height="216" rx="46" ry="46"/>
+    </clipPath>
+    <mask id="spindleHole">
+      <rect x="0" y="0" width="512" height="512" fill="white"/>
+      <rect x="246" y="246" width="20" height="20" rx="5" ry="5" fill="black"/>
+    </mask>
+    <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="8" stdDeviation="18" flood-color="#000000" flood-opacity="0.55"/>
+    </filter>
+    <filter id="labelGlow" x="-5%" y="-5%" width="110%" height="110%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Record body -->
+  <rect x="24" y="24" width="464" height="464" rx="100" ry="100"
+        fill="url(#vinylGrad)" mask="url(#spindleHole)"/>
+
+  <!-- Groove rings -->
+  <g clip-path="url(#recordClip)" opacity="0.55" mask="url(#spindleHole)">
+    <rect x="60"  y="60"  width="392" height="392" rx="88" ry="88" fill="none" stroke="#2e2e2e" stroke-width="1.2"/>
+    <rect x="68"  y="68"  width="376" height="376" rx="85" ry="85" fill="none" stroke="#2a2a2a" stroke-width="1.0"/>
+    <rect x="76"  y="76"  width="360" height="360" rx="82" ry="82" fill="none" stroke="#303030" stroke-width="1.1"/>
+    <rect x="84"  y="84"  width="344" height="344" rx="79" ry="79" fill="none" stroke="#282828" stroke-width="1.0"/>
+    <rect x="92"  y="92"  width="328" height="328" rx="76" ry="76" fill="none" stroke="#333333" stroke-width="1.2"/>
+    <rect x="100" y="100" width="312" height="312" rx="73" ry="73" fill="none" stroke="#2b2b2b" stroke-width="1.0"/>
+    <rect x="108" y="108" width="296" height="296" rx="70" ry="70" fill="none" stroke="#2f2f2f" stroke-width="1.1"/>
+    <rect x="116" y="116" width="280" height="280" rx="67" ry="67" fill="none" stroke="#292929" stroke-width="1.0"/>
+    <rect x="124" y="124" width="264" height="264" rx="64" ry="64" fill="none" stroke="#343434" stroke-width="1.2"/>
+    <rect x="132" y="132" width="248" height="248" rx="61" ry="61" fill="none" stroke="#2c2c2c" stroke-width="1.0"/>
+    <rect x="140" y="140" width="232" height="232" rx="58" ry="58" fill="none" stroke="#303030" stroke-width="1.1"/>
+  </g>
+
+  <!-- Vinyl sheen -->
+  <rect x="24" y="24" width="464" height="464" rx="100" ry="100"
+        fill="url(#vinylSheen)" mask="url(#spindleHole)"/>
+
+  <!-- Label -->
+  <rect x="148" y="148" width="216" height="216" rx="46" ry="46"
+        fill="url(#labelGrad)" filter="url(#labelGlow)" mask="url(#spindleHole)"/>
+
+  <!-- Label rings -->
+  <g clip-path="url(#labelClip)" opacity="0.3" mask="url(#spindleHole)">
+    <rect x="158" y="158" width="196" height="196" rx="43" ry="43" fill="none" stroke="#ffffff" stroke-width="1"/>
+    <rect x="168" y="168" width="176" height="176" rx="40" ry="40" fill="none" stroke="#ffffff" stroke-width="0.8"/>
+    <rect x="178" y="178" width="156" height="156" rx="37" ry="37" fill="none" stroke="#ffffff" stroke-width="0.7"/>
+    <rect x="188" y="188" width="136" height="136" rx="34" ry="34" fill="none" stroke="#ffffff" stroke-width="0.6"/>
+    <rect x="198" y="198" width="116" height="116" rx="30" ry="30" fill="none" stroke="#ffffff" stroke-width="0.5"/>
+  </g>
+
+  <!-- Label sheen -->
+  <rect x="148" y="148" width="216" height="216" rx="46" ry="46"
+        fill="url(#labelSheen)" mask="url(#spindleHole)"/>
+
+  <!-- Bottom reflection -->
+  <rect x="24" y="24" width="464" height="464" rx="100" ry="100"
+        fill="url(#bottomReflect)" mask="url(#spindleHole)"/>
+
+  <!-- Rim: bright highlight top-left -->
+  <rect x="24" y="24" width="464" height="464" rx="100" ry="100"
+        fill="none" stroke="url(#rimHighlight)" stroke-width="2.5"/>
+  <!-- Rim: subtle highlight bottom-right -->
+  <rect x="24" y="24" width="464" height="464" rx="100" ry="100"
+        fill="none" stroke="url(#rimHighlight2)" stroke-width="2.5"/>
+</svg>
