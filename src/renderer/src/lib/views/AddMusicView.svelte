@@ -34,6 +34,7 @@
   let query = get(searchInput)
   let lastQuery = get(searchLastQuery)
   let cookiesHelpOpen = false
+  let previewedId: string | null = null
 
   $: libraryUrls = new Set($tracks.filter((t) => t.status === 'ok').map((t) => t.source_url).filter(Boolean) as string[])
 
@@ -56,6 +57,7 @@
   })
 
   $: searchInput.set(query)
+  $: $searchResults, (previewedId = null)
 
   function handleKeydown(e: KeyboardEvent): void {
     if (e.key === 'Enter') search()
@@ -209,7 +211,7 @@
         {#each $searchResults as result, i (result.id)}
           {@const _url = result.webpage_url || result.url}
           {@const status = libraryUrls.has(_url) ? 'library' : activeUrls.has(_url) ? 'downloading' : 'available'}
-          <div class="result-row" class:row-in-library={status === 'library'} class:row-downloading={status === 'downloading'}>
+          <div class="result-row" class:row-in-library={status === 'library'} class:row-downloading={status === 'downloading'} class:row-previewed={previewedId === result.id}>
             <span class="col-n">{i + 1}</span>
             <span class="col-title">
               <span class="title-text" title={result.title}>{result.title}</span>
@@ -221,7 +223,7 @@
             <span class="col-dur">{formatDuration(result.duration)}</span>
             <span class="col-actions">
               <!-- svelte-ignore a11y-invalid-attribute -->
-              <a class="preview-link" href="#" on:click|preventDefault={() => window.open(result.webpage_url)} title="Open in browser">
+              <a class="preview-link" href="#" on:click|preventDefault={() => { previewedId = result.id; window.open(result.webpage_url) }} title="Open in browser">
                 <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M5 2H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V8" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
                   <path d="M8 1h4v4" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
@@ -519,6 +521,7 @@
   .result-row:hover { background: var(--bg-hover); }
   .result-row.row-in-library { font-weight: 600; }
   .result-row.row-downloading { color: var(--fg-muted); }
+  .result-row.row-previewed { background: color-mix(in srgb, var(--accent) 12%, transparent); }
 
   /* ── Flex column widths (result rows + header) ───────────────────────── */
 
