@@ -91,12 +91,39 @@
       case 'cancelled':   return 'Cancelled'
     }
   }
+
+  // ── Title / Channel column resize ─────────────────────────────────────────
+
+  let containerWidth = 0
+  const FIXED_COLS = 276 // 24(n) + 60(dur) + 160(actions) + 24(row-pad) + 8(title-pr)
+  const MIN_COL = 80
+
+  let userTitleWidth: number | null = null
+  $: available = Math.max(200, containerWidth - FIXED_COLS)
+  $: maxTitle  = available - MIN_COL
+  $: titleWidth = userTitleWidth !== null
+    ? Math.max(MIN_COL, Math.min(userTitleWidth, maxTitle))
+    : Math.round(available * 0.6)
+
+  function startResize(e: MouseEvent): void {
+    const startX = e.clientX
+    const startW = titleWidth
+    function onMove(ev: MouseEvent): void {
+      userTitleWidth = Math.max(MIN_COL, Math.min(startW + (ev.clientX - startX), maxTitle))
+    }
+    function onUp(): void {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }
 </script>
 
 <div class="add-music">
 
   <!-- ── Top island: search toolbar + results ──────────────────────────── -->
-  <div class="island island-top">
+  <div class="island island-top" bind:clientWidth={containerWidth} style="--title-w: {titleWidth}px">
     <div class="toolbar">
       <div class="search-input-wrap">
         <svg class="yt-icon" width="14" height="10" viewBox="0 0 14 10" aria-hidden="true">
@@ -169,7 +196,11 @@
       <div class="results-label">Results for "{lastQuery}"</div>
       <div class="header-row">
         <span class="col-n">#</span>
-        <span class="col-title">Title</span>
+        <span class="col-title">
+          Title
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
+          <span class="resize-handle" on:mousedown|stopPropagation={startResize}></span>
+        </span>
         <span class="col-channel">Channel</span>
         <span class="col-dur">Duration</span>
         <span class="col-actions"></span>
@@ -495,11 +526,25 @@
   .header-row .col-n      { width: 24px; flex-shrink: 0; text-align: center; }
 
   .result-row .col-title,
-  .header-row .col-title  { flex: 1; min-width: 0; max-width: none; width: auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 8px; }
+  .header-row .col-title  { width: var(--title-w); flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 8px; }
+  .header-row .col-title  { position: relative; }
   .result-row .col-title  { display: flex; align-items: center; gap: 6px; }
 
+  .resize-handle {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    cursor: col-resize;
+  }
+  .resize-handle:hover {
+    background: var(--accent);
+    opacity: 0.4;
+  }
+
   .result-row .col-channel,
-  .header-row .col-channel { width: 280px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg-muted); }
+  .header-row .col-channel { flex: 1; min-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg-muted); }
 
   .result-row .col-dur,
   .header-row .col-dur    { width: 60px; flex-shrink: 0; text-align: right; font-variant-numeric: tabular-nums; color: var(--fg-muted); }
@@ -613,7 +658,7 @@
   /* ── Column widths ───────────────────────────────────────────────────── */
 
   .col-n        { width: 24px; }
-  .col-title    { max-width: 0; width: 100%; }
+  .data-table .col-title { max-width: 0; width: 100%; }
   .col-channel  { width: 280px; min-width: 280px; }
   .col-dur      { width: 60px; text-align: right; }
   .col-actions  { width: 160px; white-space: nowrap; }

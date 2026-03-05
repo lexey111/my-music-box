@@ -2,6 +2,7 @@
 /tmp
 /out
 /out-tsc
+/dist
 
 /node_modules
 npm-debug.log*
