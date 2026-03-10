@@ -12,11 +12,14 @@ files:
 extraResources:
   - from: resources/icon.png
     to: icon.png
+  - from: resources/bin
+    to: bin
+    filter:
+      - ffmpeg
+      - ffprobe
 asarUnpack:
   # Native modules must not be asar-packed
   - node_modules/better-sqlite3/**
-  # Future: bundled binaries
-  # - resources/bin/**
 mac:
   category: public.app-category.music
   target:

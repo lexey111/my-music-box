@@ -16,7 +16,7 @@ The main use case is a car stereo (or any device) that plays audio from a USB dr
 
 ## Download
 
-**[Download for macOS (Apple Silicon)](https://github.com/lexey111/my-music-box/releases/latest/download/My.Music.Box-0.1.0-arm64.dmg)**
+**[Download for macOS (Apple Silicon)](https://github.com/lexey111/my-music-box/releases/latest/download/My.Music.Box-0.1.3-arm64.dmg)**
 
 Or see all releases on the [Releases page](https://github.com/lexey111/my-music-box/releases).
 
@@ -26,13 +26,14 @@ Or see all releases on the [Releases page](https://github.com/lexey111/my-music-
 
 - macOS (Apple Silicon or Intel)
 - [yt-dlp](https://github.com/yt-dlp/yt-dlp) — audio downloading
-- [ffmpeg](https://ffmpeg.org/) — audio encoding and normalization
 
-Install both via Homebrew:
+Install via Homebrew:
 
 ```sh
-brew install yt-dlp ffmpeg
+brew install yt-dlp
 ```
+
+> `ffmpeg` and `ffprobe` are bundled inside the app — no separate installation needed.
 
 ## Development
 

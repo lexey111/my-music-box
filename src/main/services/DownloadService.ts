@@ -31,6 +31,16 @@ interface ActiveJob {
 
 const EXTRA_PATHS = ['/opt/homebrew/bin', '/usr/local/bin']
 
+function getBundledBinDir(): string | null {
+  // process.resourcesPath is set by Electron for packaged apps
+  const rp = (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath
+  if (rp) {
+    const dir = join(rp, 'bin')
+    if (existsSync(join(dir, 'ffmpeg'))) return dir
+  }
+  return null
+}
+
 // Browsers checked in preference order; Safari is always present on macOS.
 const BROWSER_APPS: Array<{ name: string; app: string }> = [
   { name: 'chrome',   app: '/Applications/Google Chrome.app' },
@@ -76,6 +86,11 @@ function humanizeError(raw: string): string {
 }
 
 function findBinary(name: string): string | null {
+  const bundledDir = getBundledBinDir()
+  if (bundledDir) {
+    const full = join(bundledDir, name)
+    if (existsSync(full)) return full
+  }
   try {
     const result = execSync(`which ${name}`, { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] })
     return result.trim() || null
@@ -206,6 +221,7 @@ export class DownloadService {
     try {
       // ── Phase 1: yt-dlp download (0–90%) ──────────────────────────────────
       const ytdlp = findBinary('yt-dlp')!
+      const ffmpegBin = findBinary('ffmpeg')
       const cb = settings.cookiesBrowser
       const ytArgs = [
         '-x',
@@ -213,6 +229,7 @@ export class DownloadService {
         '--audio-quality', '0',
         '--no-playlist',
         '--newline',
+        ...(ffmpegBin ? ['--ffmpeg-location', ffmpegBin] : []),
         ...(cb !== 'none' ? ['--cookies-from-browser', cb] : []),
         '-o', `${tmpBase}.%(ext)s`,
         url
